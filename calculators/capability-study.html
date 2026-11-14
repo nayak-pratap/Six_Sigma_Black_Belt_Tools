@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capability Study: Cp, Cpk, Pp, Ppk | Black Belt Toolkit</title>
+<meta name="description" content="Separate short-term and long-term capability from subgrouped data, with Cp, Cpk, Pp, Ppk, Cpm, expected PPM and a histogram against the specification.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Measure phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Capability Study: Cp, Cpk, Pp, Ppk</h1><p class="lead">Separate short-term and long-term capability from subgrouped data, with Cp, Cpk, Pp, Ppk, Cpm, expected PPM and a histogram against the specification.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field"><label for="cp_usl">Upper spec limit (USL)</label><input id="cp_usl" type="number" step="any"></div><div class="field"><label for="cp_lsl">Lower spec limit (LSL)</label><input id="cp_lsl" type="number" step="any"></div><div class="field"><label for="cp_t">Target (blank = midpoint)</label><input id="cp_t" type="number" step="any"></div><div class="field" style="grid-column:1/-1"><label for="cp_data">Subgroups: one subgroup per line (2 to 10 values), or one value per line for individuals</label><textarea id="cp_data" rows="10"></textarea></div></div><p class="note" style="margin-top:12px">Within-subgroup σ = R̄ ÷ d2 (or MR̄ ÷ 1.128 for individuals): potential capability, Cp and Cpk. Overall σ is the standard deviation of all values: performance, Pp and Ppk. A big gap between Cpk and Ppk means the process drifts between subgroups. Cpm penalises being off target. Needs a stable, roughly normal process, so check a control chart first. Example: bore diameter (mm), 20 subgroups of 5, USL 10.35, LSL 9.65.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+function mk(){var r=mulberry(21),L=[];for(var i=0;i<20;i++){var d=0.04*Math.sin(i/3)+(i>=14?0.05:0),row=[];for(var j=0;j<5;j++)row.push((10.0+d+gaussR(r)*0.1).toFixed(3));L.push(row.join(' '));}return L.join('\n');}
+var EX=mk();
+function update(){
+  var usl=val('cp_usl'),lsl=val('cp_lsl'),T=val('cp_t'),rows=$('#cp_data').value.split(/\n/).map(parseNums).filter(function(r){return r.length;});
+  if(!(usl>lsl)||rows.length<2){$('#out').innerHTML='<p class="note">Enter USL greater than LSL and at least 2 lines of data.</p>';return;}
+  var all=[].concat.apply([],rows),n=rows[0].length,eq=rows.every(function(r){return r.length===n;}),mu=mean(all),so=sdev(all),sw;
+  if(!(so>0)){$('#out').innerHTML='<p class="note">No variation in the data.</p>';return;}
+  if(n===1){var mr=0;for(var i=1;i<all.length;i++)mr+=Math.abs(all[i]-all[i-1]);sw=mr/(all.length-1)/1.128;}
+  else if(eq&&n<=10){var rb=mean(rows.map(function(r){return Math.max.apply(null,r)-Math.min.apply(null,r);}));sw=rb/CC[n][3];}
+  else{$('#out').innerHTML='<p class="note">Subgroups must all have the same size, between 2 and 10 (or 1 value per line for individuals).</p>';return;}
+  if(!(T===T))T=(usl+lsl)/2;
+  var cw=capability(usl,lsl,mu,sw),co=capability(usl,lsl,mu,so),cpm=co.cp/Math.sqrt(1+Math.pow((mu-T)/so,2));
+  var cls=function(v){return v>=1.33?'good':v>=1?'warn':'bad';};
+  var W=520,H=230,lo=Math.min(lsl,mu-4*so),hi=Math.max(usl,mu+4*so),f=frame(W,H,lo,hi,0,1,{xl:'Value',yl:'',mb:34}),bins=14,bw=(Math.max.apply(null,all)-Math.min.apply(null,all))/bins||1,mn=Math.min.apply(null,all),cnt=new Array(bins).fill(0);all.forEach(function(v){cnt[Math.min(bins-1,Math.floor((v-mn)/bw))]++;});
+  var mc=Math.max.apply(null,cnt),s='';cnt.forEach(function(c,i){s+='<rect x="'+(f.xs(mn+i*bw)+1)+'" y="'+(f.ys(0)-c/mc*(H-f.mb-f.mt-14))+'" width="'+(f.xs(mn+(i+1)*bw)-f.xs(mn+i*bw)-2)+'" height="'+(c/mc*(H-f.mb-f.mt-14))+'" style="fill:var(--accent);opacity:.55"/>';});
+  var pts=[];for(var q=0;q<=80;q++){var xv=lo+(hi-lo)*q/80,yv=Math.exp(-0.5*Math.pow((xv-mu)/so,2))*(H-f.mb-f.mt-14);pts.push(f.xs(xv)+','+(f.ys(0)-yv));}
+  s+='<polyline points="'+pts.join(' ')+'" style="fill:none;stroke:var(--ink);stroke-width:1.5"/>';
+  [[lsl,'LSL'],[usl,'USL'],[T,'Target']].forEach(function(l){s+='<line x1="'+f.xs(l[0])+'" x2="'+f.xs(l[0])+'" y1="'+f.mt+'" y2="'+f.ys(0)+'" style="stroke:var(--'+(l[1]==='Target'?'good':'bad')+');stroke-dasharray:5 3"/><text x="'+f.xs(l[0])+'" y="'+(f.mt+10)+'" text-anchor="middle" '+f.t+'>'+l[1]+'</text>';});
+  $('#out').innerHTML='<div class="kpis">'+kpi('Cp (within)',fmt(cw.cp,2),cls(cw.cp))+kpi('Cpk (within)',fmt(cw.cpk,2),cls(cw.cpk))+kpi('Pp (overall)',fmt(co.cp,2),cls(co.cp))+kpi('Ppk (overall)',fmt(co.cpk,2),cls(co.cpk))+kpi('Cpm',fmt(cpm,2),cls(cpm))+'</div><div class="kpis">'+kpi('σ within',fmt(sw,4))+kpi('σ overall',fmt(so,4))+kpi('Mean',fmt(mu,4))+kpi('PPM within',Math.round(cw.ppm).toLocaleString('en-US'))+kpi('PPM overall',Math.round(co.ppm).toLocaleString('en-US'))+kpi('Z bench (overall)',fmt(normInv(1-Math.min(0.999999,Math.max(1e-9,co.ppm/1e6))),2))+'</div>'+
+  '<div class="verdict '+cls(co.cpk)+'">'+(co.cpk>=1.33?'Capable: Ppk of at least 1.33 is the usual minimum for an existing process (1.67 for critical features).':co.cpk>=1?'Marginal. Real parts will be out of specification at about '+Math.round(co.ppm).toLocaleString('en-US')+' per million. Reduce variation or re-centre.':'Not capable.')+(cw.cpk-co.cpk>0.25?' Cpk is well above Ppk: the process is capable in the short term but drifts. Find and control the between-subgroup source (tool wear, set-up, lots).':'')+(cw.cp-cw.cpk>0.3?' Cp is much higher than Cpk: centring the mean would help most.':'')+'</div>'+svgWrap(W,H,s,'Histogram against specification limits')+'<p class="note">Treat indices as estimates: with fewer than about 100 values, the confidence interval on Cpk is wide. Check normality first; for skewed data use a transformation or a non-normal method.</p>';
+}
+setupTool({},update,function(){$('#cp_usl').value=10.35;$('#cp_lsl').value=9.65;$('#cp_t').value='';$('#cp_data').value=EX;});
+
+</script>
+</body>
+</html>

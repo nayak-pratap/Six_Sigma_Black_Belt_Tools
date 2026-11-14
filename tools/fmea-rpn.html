@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FMEA with RPN and Priority | Black Belt Toolkit</title>
+<meta name="description" content="Score failure modes by severity, occurrence and detection, rank by RPN, and flag high-severity items regardless of RPN.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Tool · Analyze phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">FMEA with RPN and Priority</h1><p class="lead">Score failure modes by severity, occurrence and detection, rank by RPN, and flag high-severity items regardless of RPN.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div id="tool"><p class="note" style="margin-bottom:12px">Score each failure mode 1 to 10 for severity (S), occurrence (O) and detection (D, where 10 means it will not be caught). RPN = S × O × D. A high severity (9 or 10) needs action even when RPN is low. Example: a sintering and grinding process FMEA.</p><div id="g"></div><div class="out" id="out" style="margin-top:16px"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var grid=gridTable({host:'g',extra:['RPN','Priority'],
+ cols:[{k:'step',l:'Process step',w:110},{k:'fm',l:'Failure mode',w:150},{k:'ef',l:'Effect',w:150},{k:'cause',l:'Cause',w:150},{k:'s',l:'S',t:'num',min:1,max:10},{k:'o',l:'O',t:'num',min:1,max:10},{k:'d',l:'D',t:'num',min:1,max:10},{k:'act',l:'Recommended action',w:180}],
+ example:[{step:'Sinter',fm:'Temperature overshoot',ef:'Grain growth, brittle edge',cause:'Thermocouple drift',s:8,o:5,d:6,act:'Calibrate thermocouples each month, add redundant sensor'},{step:'Press',fm:'Density variation',ef:'Uneven shrinkage',cause:'Powder flow variation',s:6,o:6,d:5,act:'Add fill weight check per cycle'},{step:'Grind',fm:'Edge microchip',ef:'Customer chipping',cause:'Worn wheel',s:7,o:6,d:7,act:'Wheel life limit by count, dress by schedule'},{step:'Inspect',fm:'Chip missed',ef:'Defect shipped',cause:'Fatigue, small chip',s:9,o:3,d:7,act:'Vision system pilot'},{step:'Pack',fm:'Wrong grade label',ef:'Wrong product used',cause:'Manual labelling',s:9,o:2,d:3,act:'Barcode verification'}],
+ compute:function(rows){
+  var r2=rows.map(function(r){return (+r.s||0)*(+r.o||0)*(+r.d||0);}),mx=Math.max.apply(null,r2.concat([1])),hi=0;
+  var cells=rows.map(function(r,i){var rp=r2[i],pr=(+r.s>=9)?'High: severity':rp>=200?'High':rp>=100?'Medium':'Low';if(pr!=='Low'&&pr!=='Medium')hi++;return['<b>'+rp+'</b>','<span style="color:var(--'+(pr.indexOf('High')===0?'bad':pr==='Medium'?'warn':'good')+')">'+pr+'</span>'];});
+  var ord=rows.map(function(r,i){return i;}).sort(function(a,b){return r2[b]-r2[a];});
+  return{cells:cells,out:'<div class="kpis">'+kpi('Failure modes',rows.length)+kpi('High priority',hi,hi?'warn':'good')+kpi('Highest RPN',mx>1?mx:'-')+'</div>'+hbars(ord.map(function(i){return{l:(rows[i].fm||'(blank)'),v:r2[i],c:(+rows[i].s>=9||r2[i]>=200)?'var(--bad)':''};}),function(v){return fmt(v,0);})+'<div class="verdict warn">Work down the list: take action on High items first, then re-score S, O and D <i>after</i> the action to prove the RPN fell. RPN alone can mislead: a rare severe failure (S = 9 or 10) is flagged by severity, not only by RPN.</div>'};
+ }});
+setupTool({},function(){},function(){grid.reset();});
+
+</script>
+</body>
+</html>

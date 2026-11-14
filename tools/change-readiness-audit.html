@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change Readiness Audit (ADKAR) | Black Belt Toolkit</title>
+<meta name="description" content="Score awareness, desire, knowledge, ability and reinforcement for a change, and find where people are stuck.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Tool · Improve phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Change Readiness Audit (ADKAR)</h1><p class="lead">Score awareness, desire, knowledge, ability and reinforcement for a change, and find where people are stuck.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div id="tool"><p class="note" style="margin-bottom:12px">Rate each statement for the people who must change. ADKAR is sequential: a low score early (awareness or desire) blocks everything after. Example: rolling out a new inspection method.</p><div id="g"></div><div class="out" id="out" style="margin-top:16px"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var grid2=auditTool({host:'g',scale:[[0,'Not at all'],[1,'A little'],[2,'Mostly'],[3,'Fully']],
+ groups:[
+  {n:'Awareness',items:['People understand why the change is needed','They have seen the data on the problem','They know what happens if nothing changes']},
+  {n:'Desire',items:['People see a personal benefit','Their managers support the change visibly','Fears (jobs, workload, status) have been discussed']},
+  {n:'Knowledge',items:['People know what to do differently','Training matches the real tasks','Written standard work exists']},
+  {n:'Ability',items:['People have time and tools to do it','Coaches are available on the floor','Early attempts are supported, not punished']},
+  {n:'Reinforcement',items:['Results are shared and celebrated','Metrics and incentives reward the new behaviour','There is a plan to stop slipping back']}],
+ bands:[[80,'Ready: proceed with the rollout.','good'],[55,'Partly ready: close the gaps while rolling out.','warn'],[0,'Not ready: rolling out now will likely fail.','bad']],
+ advice:function(low){var m={Awareness:'Communicate the case for change with real data and stories before anything else.',Desire:'Meet resistors one to one, address what they fear, and recruit a respected champion.',Knowledge:'Provide hands-on training and standard work.',Ability:'Remove barriers: time, tools, coaching on the floor.',Reinforcement:'Align metrics, recognition and reviews to the new method.'};return (m[low]||'')+' Fix the earliest low score first: ADKAR builds in order.';},
+ example:[[3,2,2],[2,1,1],[2,2,1],[1,1,2],[1,0,1]]});
+setupTool({},function(){},function(){grid2.reset();});
+
+</script>
+</body>
+</html>

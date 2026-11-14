@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which Methodology? Project Type Selector | Black Belt Toolkit</title>
+<meta name="description" content="Answer five questions to choose between a quick fix, project management, Lean, DMAIC or DFSS, with the reason and first move.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Tool · Define phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Which Methodology? Project Type Selector</h1><p class="lead">Answer five questions to choose between a quick fix, project management, Lean, DMAIC or DFSS, with the reason and first move.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field"><label for="ms_exist">1. Is the process or product already running?</label><select id="ms_exist"><option value="y">Yes, it exists</option><option value="n">No, it is new or a redesign is needed</option></select></div><div class="field"><label for="ms_cause">2. Do you know the cause of the problem?</label><select id="ms_cause"><option value="n">No, the cause is unknown</option><option value="y">Yes, the cause is known</option></select></div><div class="field"><label for="ms_sol">3. Is the solution already obvious and agreed?</label><select id="ms_sol"><option value="n">No</option><option value="y">Yes</option></select></div><div class="field"><label for="ms_type">4. What is the main symptom?</label><select id="ms_type"><option value="var">Variation, defects or inconsistent results</option><option value="waste">Delay, waste, long lead time, excess inventory</option><option value="both">Both defects and delay</option></select></div><div class="field"><label for="ms_big">5. How big and risky is the change?</label><select id="ms_big"><option value="small">Small, within one team, days to weeks</option><option value="big">Cross-functional, months, needs a sponsor</option></select></div></div><p class="note" style="margin-top:12px">This follows the logic of the project-type decision flow in the Black Belt pocket guide: first decide whether the work is a project at all, then whether the cause or the solution is known, then whether the problem is waste, variation or design. Example: an existing process with an unknown cause and inconsistent results leads to DMAIC.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+function update(){
+  var e=$('#ms_exist').value,c=$('#ms_cause').value,s=$('#ms_sol').value,t=$('#ms_type').value,b=$('#ms_big').value,r;
+  if(e==='n')r=['DFSS (DMADV or IDOV)','There is no process to measure and fix. Design it to meet customer CTQs from the start, with capability predicted before launch.','Define customer needs and CTQs with QFD, then set design targets from capability.','project-management'];
+  else if(c==='y'&&s==='y')r=['Just do it (with project management)','Cause and solution are known. A Six Sigma project would add cost without learning anything.','Write a short plan, assign owner and date, implement, and verify with data.','pm'];
+  else if(c==='y'&&s==='n')r=['Improve-focused project or kaizen','The cause is known, so skip heavy Analyze work. Generate and test solutions.','Brainstorm solutions, run a pilot or DOE, then control.','kaizen'];
+  else if(b==='small'&&t==='waste')r=['Kaizen event (Lean)','A small waste problem inside one team suits a 3 to 5 day kaizen with a clear scope.','Map the current state, remove obvious waste, standardise, and follow up at 30 days.','kaizen'];
+  else if(t==='waste')r=['Lean project (value stream improvement) with DMAIC discipline','Flow and delay are the problem. Value stream mapping finds the constraint, and DMAIC structure keeps the work measured.','Value stream map, find the constraint, apply pull and flow, set standard work.','lean'];
+  else if(t==='both')r=['Lean Six Sigma DMAIC project','Defects and delay interact: rework creates queues, queues hide defects. Use DMAIC with Lean tools in Improve.','Charter, value stream map for delay, capability and MSA for defects, DOE for key X variables.','dmaic'];
+  else r=['Six Sigma DMAIC project','Variation with an unknown cause is the classic DMAIC problem. Data must tell you which inputs matter.','Charter, measurement system analysis, baseline capability, then hypothesis tests and regression to find the vital few X variables.','dmaic'];
+  $('#out').innerHTML='<div class="verdict good" style="font-size:1.05rem"><b>'+esc(r[0])+'</b></div><p>'+esc(r[1])+'</p><div class="verdict warn"><b>First move:</b> '+esc(r[2])+'</div><div class="tbl-wrap"><table><thead><tr><th>Situation</th><th>Approach</th></tr></thead><tbody><tr><td>New product or process, or the design cannot meet needs</td><td>DFSS</td></tr><tr><td>Existing process, unknown cause, variation</td><td>DMAIC</td></tr><tr><td>Delay and waste, flow</td><td>Lean / value stream</td></tr><tr><td>Cause and solution known</td><td>Project management or just do it</td></tr><tr><td>Small scope, quick win</td><td>Kaizen</td></tr></tbody></table></div><p class="note">Hybrid problems are common. The selection is a starting point; revisit it at the first tollgate once data are in.</p>';
+}
+setupTool({ms_exist:'y',ms_cause:'n',ms_sol:'n',ms_type:'var',ms_big:'big'},update);
+
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Variance Tests: F, Bartlett and Levene | Black Belt Toolkit</title>
+<meta name="description" content="Test whether group spreads differ, with the right test for normal and non-normal data, and the ratio of standard deviations.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Analyze phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Variance Tests: F, Bartlett and Levene</h1><p class="lead">Test whether group spreads differ, with the right test for normal and non-normal data, and the ratio of standard deviations.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field" style="grid-column:1/-1"><label for="vt_data">One group per line, optional name before a colon</label><textarea id="vt_data" rows="5"></textarea></div><div class="field"><label for="vt_a">Significance level α</label><select id="vt_a"><option value="0.10">0.10</option><option value="0.05">0.05</option><option value="0.01">0.01</option></select></div></div><p class="note" style="margin-top:12px">Bartlett’s test is powerful but sensitive to non-normality. Levene (Brown-Forsythe, median-based) is robust and is the safer default. Two groups also get the classic F-test (ratio of variances). Unequal variances do not stop you from using Welch’s t-test, and they matter for ANOVA. Example: bore diameters (mm) from three machines.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var EX='Machine 1: 10.01 10.03 9.99 10.02 10.00 10.01 9.98 10.02 10.00 10.01\nMachine 2: 10.05 9.92 10.12 9.88 10.09 9.95 10.15 9.90 10.06 9.97\nMachine 3: 10.02 10.00 10.03 9.99 10.01 10.04 9.98 10.02 10.00 10.01';
+function update(){
+  var names=[],g=[],a=parseFloat($('#vt_a').value);$('#vt_data').value.split(/\n/).forEach(function(l){if(!l.trim())return;var nm='Group '+(g.length+1),s=l,c=l.indexOf(':');if(c>=0){nm=l.slice(0,c).trim()||nm;s=l.slice(c+1);}var v=parseNums(s);if(v.length){names.push(nm);g.push(v);}});
+  if(g.length<2||g.some(function(x){return x.length<3||!(sdev(x)>0);})){$('#out').innerHTML='<p class="note">Enter at least 2 groups, each with 3 or more values that are not all identical.</p>';return;}
+  var lv=levene(g),bt=bartlett(g),sds=g.map(sdev),h='<div class="kpis">'+kpi('Levene p',pstr(lv.p),lv.p<a?'warn':'good')+kpi('Bartlett p',pstr(bt.p),bt.p<a?'warn':'good')+kpi('Largest ÷ smallest σ',fmt(Math.max.apply(null,sds)/Math.min.apply(null,sds),2))+'</div>';
+  if(g.length===2){var F=Math.pow(sds[0],2)/Math.pow(sds[1],2),pf=2*Math.min(1-fUpperP(F,g[0].length-1,g[1].length-1),fUpperP(F,g[0].length-1,g[1].length-1));h+='<div class="kpis">'+kpi('F (var1 ÷ var2)',fmt(F,3))+kpi('F-test p',pstr(Math.min(1,pf)))+'</div>';}
+  var diff=lv.p<a;
+  $('#out').innerHTML=h+'<div class="verdict '+(diff?'warn':'good')+'">'+(diff?'Levene p < α: the spreads differ. Improve or investigate the noisiest group. For comparing means, use Welch’s t-test or a non-pooled approach.':'No evidence the spreads differ. Pooled-variance methods are reasonable.')+'</div><div class="tbl-wrap"><table><thead><tr><th>Group</th><th class="num">n</th><th class="num">Mean</th><th class="num">Std dev</th></tr></thead><tbody>'+g.map(function(v,i){return '<tr><td>'+esc(names[i])+'</td><td class="num">'+v.length+'</td><td class="num">'+fmt(mean(v),4)+'</td><td class="num">'+fmt(sds[i],4)+'</td></tr>';}).join('')+'</tbody></table></div><p class="note">In a Six Sigma project, a difference in spread is often more valuable than a difference in mean: reducing variation is the core goal.</p>';
+}
+setupTool({},update,function(){$('#vt_data').value=EX;$('#vt_a').value='0.05';});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Root Cause Hypothesis Tracker | Black Belt Toolkit</title>
+<meta name="description" content="Track each suspected cause through test, evidence and verdict so nothing is assumed, and see how many are verified.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Tool · Analyze phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Root Cause Hypothesis Tracker</h1><p class="lead">Track each suspected cause through test, evidence and verdict so nothing is assumed, and see how many are verified.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div id="tool"><p class="note" style="margin-bottom:12px">List each suspected cause, the test you will use, the result, and your verdict. A cause is verified only when data back it. Example: hypotheses from a chipping investigation.</p><div id="g"></div><div class="out" id="out" style="margin-top:16px"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var V=[['open','Untested'],['yes','Confirmed'],['no','Rejected'],['part','Partly']];
+var grid=gridTable({host:'g',extra:['Status'],
+ cols:[{k:'c',l:'Suspected cause (X)',w:180},{k:'t',l:'Test used',w:170},{k:'r',l:'Evidence / result',w:200},{k:'v',l:'Verdict',t:'sel',o:V},{k:'e',l:'Effect on Y (e.g. % of gap)',t:'num',min:0,max:100}],
+ example:[{c:'Furnace peak temperature above 1,440 C',t:'Two-sample t-test: chip rate hot vs normal cycles',r:'p = 0.003; hot cycles 2.1x chips',v:'yes',e:35},{c:'Powder moisture',t:'Regression of chips on moisture, 15 lots',r:'R2 = 0.62, p < 0.001',v:'yes',e:30},{c:'Night shift operator technique',t:'ANOVA across shifts',r:'p = 0.41, no difference',v:'no',e:0},{c:'Grinding wheel wear',t:'Compare chips by wheel age',r:'Trend, not yet tested statistically',v:'part',e:15},{c:'Humidity in the press hall',t:'',r:'',v:'open',e:''}],
+ compute:function(rows){
+  var cnt={yes:0,no:0,part:0,open:0},eff=0;
+  var cells=rows.map(function(r){cnt[r.v]=(cnt[r.v]||0)+1;if(r.v==='yes')eff+=+r.e||0;var warn=(r.v==='yes'&&!String(r.r||'').trim())?' <span style="color:var(--bad)">add evidence</span>':'';return[({yes:'✓ confirmed',no:'rejected',part:'partly',open:'untested'}[r.v]||'')+warn];});
+  return{cells:cells,out:'<div class="kpis">'+kpi('Hypotheses',rows.length)+kpi('Confirmed',cnt.yes,'good')+kpi('Rejected',cnt.no)+kpi('Untested',cnt.open+cnt.part,cnt.open+cnt.part?'warn':'good')+kpi('Gap explained',Math.min(100,eff)+'%',eff>=70?'good':'warn')+'</div><div class="verdict '+(eff>=70?'good':'warn')+'">'+(eff>=70?'The confirmed causes explain most of the gap. Move to Improve.':'Confirmed causes explain '+Math.min(100,eff)+'% of the gap. Test the remaining hypotheses, or look for more, before designing solutions.')+'</div>'};
+ }});
+setupTool({},function(){},function(){grid.reset();});
+
+</script>
+</body>
+</html>

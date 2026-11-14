@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stakeholder Engagement and Communication Plan | Black Belt Toolkit</title>
+<meta name="description" content="Map influence and support, spot gaps between where people are and where you need them, and get an engagement action per stakeholder.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Tool · Define phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Stakeholder Engagement and Communication Plan</h1><p class="lead">Map influence and support, spot gaps between where people are and where you need them, and get an engagement action per stakeholder.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div id="tool"><p class="note" style="margin-bottom:12px">For each stakeholder rate influence (1 to 5), current support and the support you need (−2 resistant to +2 champion). The gap drives the engagement action. Example: a chipping-reduction project.</p><div id="g"></div><div class="out" id="out" style="margin-top:16px"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var S=[['-2','-2 Resistant'],['-1','-1 Doubtful'],['0','0 Neutral'],['1','+1 Supportive'],['2','+2 Champion']];
+var grid=gridTable({host:'g',extra:['Gap','Action'],
+ cols:[{k:'n',l:'Stakeholder',w:150},{k:'i',l:'Influence 1-5',t:'num',min:1,max:5},{k:'cur',l:'Current support',t:'sel',o:S},{k:'need',l:'Needed support',t:'sel',o:S},{k:'ch',l:'Channel and frequency',w:170}],
+ example:[{n:'Plant manager (sponsor)',i:5,cur:'2',need:'2',ch:'Weekly 15-min update'},{n:'Production supervisor',i:4,cur:'-1',need:'1',ch:'Daily huddle, join the team'},{n:'Furnace operators',i:3,cur:'0',need:'1',ch:'Gemba walks, show data'},{n:'Finance partner',i:3,cur:'1',need:'1',ch:'Monthly benefit review'},{n:'Maintenance lead',i:4,cur:'-2',need:'0',ch:'1-to-1 on downtime impact'},{n:'Quality manager',i:4,cur:'1',need:'2',ch:'Tollgate reviews'}],
+ compute:function(rows){
+  var cells=rows.map(function(r){var g=(+r.need)-(+r.cur),imp=(+r.i||0),act;if(g<=0)act='Maintain: keep informed';else if(imp>=4&&g>=2)act='Urgent: sponsor-led 1-to-1, find what they fear';else if(imp>=4)act='Engage early: involve in decisions';else if(g>=2)act='Educate: show data and benefits';else act='Keep informed and listen';return[(g>0?'+':'')+g,act];});
+  var big=rows.filter(function(r){return (+r.need)-(+r.cur)>=2&&(+r.i)>=4;});
+  return{cells:cells,out:'<div class="kpis">'+kpi('Stakeholders',rows.length)+kpi('Gap ≥ 1',rows.filter(function(r){return (+r.need)-(+r.cur)>=1;}).length,'warn')+kpi('High-influence, big gap',big.length,big.length?'bad':'good')+'</div>'+(big.length?'<div class="verdict bad">Highest risk: '+big.map(function(r){return esc(r.n);}).join(', ')+'. Without their support the project is likely to stall at Improve, where change reaches their area.</div>':'<div class="verdict good">No high-influence stakeholders with a large support gap.</div>')};
+ }});
+setupTool({},function(){},function(){grid.reset();});
+
+</script>
+</body>
+</html>

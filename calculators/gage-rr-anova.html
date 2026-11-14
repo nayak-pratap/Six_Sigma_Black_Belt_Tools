@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gage R&R (ANOVA Method) | Black Belt Toolkit</title>
+<meta name="description" content="Analyse a crossed gage study from raw readings: ANOVA with interaction, variance components, %contribution, %study variation and distinct categories.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Measure phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Gage R&R (ANOVA Method)</h1><p class="lead">Analyse a crossed gage study from raw readings: ANOVA with interaction, variance components, %contribution, %study variation and distinct categories.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field"><label for="gr_tol">Tolerance (USL − LSL), optional, for %tolerance</label><input id="gr_tol" type="number" step="any"></div><div class="field" style="grid-column:1/-1"><label for="gr_data">One line per part × operator: Part Operator reading1 reading2 …</label><textarea id="gr_data" rows="12"></textarea></div></div><p class="note" style="margin-top:12px">Crossed design: every operator measures every part, with the same number of repeats. The ANOVA splits variation into part, operator, part × operator and repeatability. If the interaction is not significant (p above 0.25) it is pooled into repeatability. %StudyVar = component σ ÷ total σ. Guide: GRR under 10% good, 10 to 30% marginal, over 30% unacceptable; distinct categories 5 or more. Example: 8 parts, 3 operators, 3 repeats of a width measurement (mm).</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+function mk(){var r=mulberry(3),L=[],pv=[],ov=[0,0.015,-0.01];for(var p=0;p<8;p++)pv.push(10+p*0.06+gaussR(r)*0.01);for(var p2=0;p2<8;p2++)for(var o=0;o<3;o++){var row=['P'+(p2+1),'Op'+(o+1)];for(var k=0;k<3;k++)row.push((pv[p2]+ov[o]+gaussR(r)*0.012).toFixed(3));L.push(row.join(' '));}return L.join('\n');}
+var EX=mk();
+function update(){
+  var lines=$('#gr_data').value.split(/\n/).map(function(l){return l.trim().split(/[\s,;]+/);}).filter(function(a){return a.length>=3;}),tol=val('gr_tol');
+  var pn=[],on=[],cells={};lines.forEach(function(a){var p=a[0],o=a[1],v=a.slice(2).map(parseFloat).filter(isFinite);if(pn.indexOf(p)<0)pn.push(p);if(on.indexOf(o)<0)on.push(o);cells[p+'|'+o]=v;});
+  var P=pn.length,O=on.length,R=0,ok=P>=2&&O>=2;
+  if(ok){var r0=(cells[pn[0]+'|'+on[0]]||[]).length;R=r0;pn.forEach(function(p){on.forEach(function(o){var c=cells[p+'|'+o];if(!c||c.length!==r0)ok=false;});});}
+  if(!ok||R<2){$('#out').innerHTML='<p class="note">Need at least 2 parts and 2 operators, every part × operator present, each with the same number (2 or more) of repeat readings.</p>';return;}
+  var all=[],pm={},om={},cm={};pn.forEach(function(p){on.forEach(function(o){var c=cells[p+'|'+o];cm[p+'|'+o]=mean(c);c.forEach(function(v){all.push(v);});});});var gm=mean(all);
+  pn.forEach(function(p){pm[p]=mean(on.map(function(o){return cm[p+'|'+o];}));});on.forEach(function(o){om[o]=mean(pn.map(function(p){return cm[p+'|'+o];}));});
+  var ssp=0,sso=0,ssi=0,sse=0;pn.forEach(function(p){ssp+=O*R*Math.pow(pm[p]-gm,2);});on.forEach(function(o){sso+=P*R*Math.pow(om[o]-gm,2);});
+  pn.forEach(function(p){on.forEach(function(o){ssi+=R*Math.pow(cm[p+'|'+o]-pm[p]-om[o]+gm,2);cells[p+'|'+o].forEach(function(v){sse+=Math.pow(v-cm[p+'|'+o],2);});});});
+  var dfp=P-1,dfo=O-1,dfi=dfp*dfo,dfe=P*O*(R-1),msp=ssp/dfp,mso=sso/dfo,msi=ssi/dfi,mse=sse/dfe,Fi=msi/mse,pi=fUpperP(Fi,dfi,dfe),Fp=msp/msi,Fo=mso/msi,pp=fUpperP(Fp,dfp,dfi),po=fUpperP(Fo,dfo,dfi);
+  var vr,vo,vi,vp,pooled=pi>0.25;
+  if(pooled){var msp2=(ssi+sse)/(dfi+dfe);vr=msp2;vi=0;vo=Math.max(0,(mso-msp2)/(P*R));vp=Math.max(0,(msp-msp2)/(O*R));}
+  else{vr=mse;vi=Math.max(0,(msi-mse)/R);vo=Math.max(0,(mso-msi)/(P*R));vp=Math.max(0,(msp-msi)/(O*R));}
+  var vrep=vo+vi,grr=vr+vrep,tot=grr+vp,pc=function(v){return Math.sqrt(v/tot)*100;},ndc=Math.floor(1.41*Math.sqrt(vp/grr)),g=pc(grr),gc=g<10?'good':g<=30?'warn':'bad';
+  var sv=function(l,v){return '<tr><td>'+l+'</td><td class="num">'+fmt(Math.sqrt(v),5)+'</td><td class="num">'+fmt(v/tot*100,1)+'%</td><td class="num">'+fmt(pc(v),1)+'%</td>'+(tol>0?'<td class="num">'+fmt(6*Math.sqrt(v)/tol*100,1)+'%</td>':'')+'</tr>';};
+  $('#out').innerHTML='<div class="kpis">'+kpi('%StudyVar GRR',fmt(g,1)+'%',gc)+kpi('% contribution GRR',fmt(grr/tot*100,1)+'%')+kpi('Distinct categories',ndc,ndc>=5?'good':'bad')+(tol>0?kpi('%Tolerance GRR',fmt(6*Math.sqrt(grr)/tol*100,1)+'%'):'')+'</div>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>Source</th><th class="num">df</th><th class="num">SS</th><th class="num">MS</th><th class="num">F</th><th class="num">p</th></tr></thead><tbody><tr><td>Part</td><td class="num">'+dfp+'</td><td class="num">'+fmt(ssp,5)+'</td><td class="num">'+fmt(msp,5)+'</td><td class="num">'+fmt(Fp,1)+'</td><td class="num">'+pstr(pp)+'</td></tr><tr><td>Operator</td><td class="num">'+dfo+'</td><td class="num">'+fmt(sso,5)+'</td><td class="num">'+fmt(mso,5)+'</td><td class="num">'+fmt(Fo,2)+'</td><td class="num">'+pstr(po)+'</td></tr><tr><td>Part × Operator</td><td class="num">'+dfi+'</td><td class="num">'+fmt(ssi,5)+'</td><td class="num">'+fmt(msi,6)+'</td><td class="num">'+fmt(Fi,2)+'</td><td class="num">'+pstr(pi)+'</td></tr><tr><td>Repeatability</td><td class="num">'+dfe+'</td><td class="num">'+fmt(sse,5)+'</td><td class="num">'+fmt(mse,6)+'</td><td></td><td></td></tr></tbody></table></div>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>Component</th><th class="num">σ</th><th class="num">% contribution</th><th class="num">%StudyVar</th>'+(tol>0?'<th class="num">%Tolerance</th>':'')+'</tr></thead><tbody>'+sv('Total gage R&R',grr)+sv('Repeatability',vr)+sv('Reproducibility',vrep)+sv('Part-to-part',vp)+'</tbody></table></div>'+
+  '<div class="verdict '+gc+'">'+(gc==='good'?'Acceptable measurement system.':gc==='warn'?'Marginal: depends on the cost of improvement and the importance of the measurement.':'Unacceptable. Fix the measurement system before using this gauge for decisions.')+(pooled?' The interaction was not significant (p = '+pstr(pi)+'), so it was pooled into repeatability.':' The part × operator interaction is significant (p = '+pstr(pi)+'): operators measure some parts differently, so look at training and the method.')+(vr>vrep?' Repeatability dominates: look at the gauge, fixture and environment.':' Reproducibility dominates: look at operator method and training.')+'</div>';
+}
+setupTool({},update,function(){$('#gr_tol').value=1.2;$('#gr_data').value=EX;});
+
+</script>
+</body>
+</html>

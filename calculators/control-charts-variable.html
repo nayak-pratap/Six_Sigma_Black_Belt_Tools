@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Variable Control Charts with Run Rules | Black Belt Toolkit</title>
+<meta name="description" content="X-bar and R chart (or individuals and moving range) from your data, with limits, capability σ and the Western Electric signals flagged.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Control phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Variable Control Charts with Run Rules</h1><p class="lead">X-bar and R chart (or individuals and moving range) from your data, with limits, capability σ and the Western Electric signals flagged.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field" style="grid-column:1/-1"><label for="vc_data">One subgroup per line (2 to 10 values), or one value per line for an individuals chart</label><textarea id="vc_data" rows="12"></textarea></div><div class="field"><label for="vc_rules">Run rules</label><select id="vc_rules"><option value="1">Rule 1 only (beyond 3σ)</option><option value="2">Rules 1 to 3 (adds 9 same side, 6 trending)</option></select></div></div><p class="note" style="margin-top:12px">Limits are set from the data given, so use a baseline period that is in control. X-bar and R: limits use A2, D3, D4. Individuals: limits use 2.66 × MR̄. Rule 2: nine points in a row on one side of the centre line. Rule 3: six in a row steadily rising or falling. A signal means a special cause: investigate; do not adjust for common-cause noise. Example: 20 subgroups of 5 bore diameters with a shift from subgroup 15.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+function mk(){var r=mulberry(31),L=[];for(var i=0;i<20;i++){var d=(i>=14?0.07:0)+(i===6?0.16:0),row=[];for(var j=0;j<5;j++)row.push((10+d+gaussR(r)*0.08).toFixed(3));L.push(row.join(' '));}return L.join('\n');}
+var EX=mk();
+function sig(v,cl,ucl,lcl,rules){var s=new Array(v.length).fill(''),sg=(ucl-cl)/3;v.forEach(function(x,i){if(x>ucl||x<lcl)s[i]+='1';});
+  if(rules==='2'){for(var i=8;i<v.length;i++){var up=true,dn=true;for(var j=i-8;j<=i;j++){if(v[j]<=cl)up=false;if(v[j]>=cl)dn=false;}if(up||dn)for(var q=i-8;q<=i;q++)if(s[q].indexOf('2')<0)s[q]+='2';}
+  for(var i2=5;i2<v.length;i2++){var u=true,d=true;for(var j2=i2-5;j2<i2;j2++){if(!(v[j2+1]>v[j2]))u=false;if(!(v[j2+1]<v[j2]))d=false;}if(u||d)for(var q2=i2-5;q2<=i2;q2++)if(s[q2].indexOf('3')<0)s[q2]+='3';}}
+  return s;}
+function chart(v,cl,ucl,lcl,sg,label){var W=560,H=210,lo=Math.min(Math.min.apply(null,v),lcl),hi=Math.max(Math.max.apply(null,v),ucl),pad=(hi-lo)*.08||1,f=frame(W,H,1,Math.max(2,v.length),lo-pad,hi+pad,{xl:'Subgroup',mb:34}),s=f.base;
+  [[ucl,'UCL','bad'],[cl,'CL','ink-2'],[lcl,'LCL','bad']].forEach(function(l){s+='<line x1="'+f.ml+'" x2="'+(W-f.mr)+'" y1="'+f.ys(l[0])+'" y2="'+f.ys(l[0])+'" style="stroke:var(--'+l[2]+');stroke-dasharray:'+(l[1]==='CL'?'0':'5 3')+'"/><text x="'+(W-f.mr)+'" y="'+(f.ys(l[0])-3)+'" text-anchor="end" '+f.t+'>'+l[1]+' '+fmt(l[0],3)+'</text>';});
+  s+='<polyline points="'+v.map(function(x,i){return f.xs(i+1)+','+f.ys(x);}).join(' ')+'" style="fill:none;stroke:var(--accent);stroke-width:1.5"/>';
+  v.forEach(function(x,i){s+='<circle cx="'+f.xs(i+1)+'" cy="'+f.ys(x)+'" r="'+(sg[i]?5:3)+'" style="fill:'+(sg[i]?'var(--bad)':'var(--accent)')+'"/>';});return svgWrap(W,H,s,label);}
+function update(){
+  var rows=$('#vc_data').value.split(/\n/).map(parseNums).filter(function(r){return r.length;}),rl=$('#vc_rules').value;
+  if(rows.length<8){$('#out').innerHTML='<p class="note">Enter at least 8 lines of data.</p>';return;}
+  var n=rows[0].length;if(rows.some(function(r){return r.length!==n;})||n>10){$('#out').innerHTML='<p class="note">All lines must have the same number of values (1 to 10).</p>';return;}
+  var h='',s1,s2,nsig=0;
+  if(n===1){var x=rows.map(function(r){return r[0];}),mr=[];for(var i=1;i<x.length;i++)mr.push(Math.abs(x[i]-x[i-1]));var L=imr(mean(x),mean(mr));s1=sig(x,L.xCl,L.xUcl,L.xLcl,rl);s2=sig(mr,L.rCl,L.rUcl,0,rl);nsig=s1.concat(s2).filter(Boolean).length;
+    h='<div class="kpis">'+kpi('X̄ centre',fmt(L.xCl,4))+kpi('UCL',fmt(L.xUcl,4))+kpi('LCL',fmt(L.xLcl,4))+kpi('σ (MR̄/1.128)',fmt(L.sigma,4))+'</div>'+chart(x,L.xCl,L.xUcl,L.xLcl,s1,'Individuals chart')+chart(mr,L.rCl,L.rUcl,0,s2,'Moving range chart');}
+  else{if(n<2){return;}var xb=rows.map(mean),rg=rows.map(function(r){return Math.max.apply(null,r)-Math.min.apply(null,r);}),L2=xbarR(n,mean(xb),mean(rg));s1=sig(xb,L2.xCl,L2.xUcl,L2.xLcl,rl);s2=sig(rg,L2.rCl,L2.rUcl,L2.rLcl,rl);nsig=s1.concat(s2).filter(Boolean).length;
+    h='<div class="kpis">'+kpi('Grand mean',fmt(L2.xCl,4))+kpi('X̄ UCL',fmt(L2.xUcl,4))+kpi('X̄ LCL',fmt(L2.xLcl,4))+kpi('R̄',fmt(L2.rCl,4))+kpi('σ within (R̄/d2)',fmt(L2.sigma,4))+'</div>'+chart(xb,L2.xCl,L2.xUcl,L2.xLcl,s1,'X-bar chart')+chart(rg,L2.rCl,L2.rUcl,L2.rLcl,s2,'Range chart');}
+  var list=[];s1.forEach(function(s,i){if(s)list.push('mean point '+(i+1)+' (rule '+s.split('').join(', ')+')');});s2.forEach(function(s,i){if(s)list.push('range point '+(i+1)+' (rule '+s.split('').join(', ')+')');});
+  $('#out').innerHTML=h+'<div class="verdict '+(nsig?'warn':'good')+'">'+(nsig?'<b>Signals:</b> '+list.join('; ')+'. Investigate each as a possible special cause (new lot, tool change, set-up). If a cause is found and fixed, drop those points and recompute the limits.':'No signals: the process shows only common-cause variation in this window. It is in statistical control and ready for a capability study.')+'</div>';
+}
+setupTool({},update,function(){$('#vc_data').value=EX;$('#vc_rules').value='2';});
+
+</script>
+</body>
+</html>

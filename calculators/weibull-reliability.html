@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weibull Reliability Analysis | Black Belt Toolkit</title>
+<meta name="description" content="Fit a Weibull distribution to failure times: shape and scale, B10 life, mean life and reliability at a mission time.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Improve phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Weibull Reliability Analysis</h1><p class="lead">Fit a Weibull distribution to failure times: shape and scale, B10 life, mean life and reliability at a mission time.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field" style="grid-column:1/-1"><label for="wb_data">Failure times (complete data, all units failed)</label><textarea id="wb_data" rows="4"></textarea></div><div class="field"><label for="wb_t">Mission time for reliability</label><input id="wb_t" type="number" step="any" min="0"></div></div><p class="note" style="margin-top:12px">Median-rank regression: rank F = (i − 0.3) ÷ (n + 0.4); plot ln t against ln(−ln(1 − F)); slope = shape β, scale η = e^(−intercept ÷ β). β below 1: early-life failures; near 1: random failures; above 1: wear-out. B10 = time by which 10% have failed. Reliability R(t) = e^(−(t/η)^β). Example: tool life in minutes of 12 inserts tested to failure.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var EX='312 355 401 428 455 470 498 520 541 566 590 640';
+function update(){
+  var x=parseNums($('#wb_data').value).filter(function(v){return v>0;}).sort(function(a,b){return a-b;}),T=val('wb_t'),n=x.length;
+  if(n<5){$('#out').innerHTML='<p class="note">Enter at least 5 positive failure times.</p>';return;}
+  var px=x.map(Math.log),py=x.map(function(_,i){return Math.log(-Math.log(1-(i+0.7)/(n+0.4)));}),mx=mean(px),my=mean(py),sxx=0,sxy=0,syy=0;for(var i=0;i<n;i++){sxx+=Math.pow(px[i]-mx,2);sxy+=(px[i]-mx)*(py[i]-my);syy+=Math.pow(py[i]-my,2);}
+  if(!(sxx>0)){$('#out').innerHTML='<p class="note">All failure times are identical.</p>';return;}
+  var b=sxy/sxx,a=my-b*mx,eta=Math.exp(-a/b),r2=sxy*sxy/(sxx*syy),mttf=eta*Math.exp(gammaln(1+1/b)),b10=eta*Math.pow(-Math.log(0.9),1/b),rt=T>0?Math.exp(-Math.pow(T/eta,b)):NaN;
+  var W=480,H=240,f=frame(W,H,px[0]-.1,px[n-1]+.1,py[0]-.3,py[n-1]+.3,{xl:'ln(time)',yl:'ln(−ln(1−F))'}),s=f.base+'<line x1="'+f.xs(px[0]-.1)+'" y1="'+f.ys(a+b*(px[0]-.1))+'" x2="'+f.xs(px[n-1]+.1)+'" y2="'+f.ys(a+b*(px[n-1]+.1))+'" style="stroke:var(--ink-2);stroke-dasharray:4 3"/>';px.forEach(function(v,i){s+='<circle cx="'+f.xs(v)+'" cy="'+f.ys(py[i])+'" r="3.5" style="fill:var(--accent)"/>';});
+  var mode=b<0.95?'Early-life (infant mortality) failures: look at defects, set-up and burn-in.':b<=1.05?'Roughly random failures: age-based replacement will not help.':b<2?'Wear-out with moderate spread: planned replacement can pay off.':'Strong wear-out with tight spread: schedule replacement just before the B10 life.';
+  $('#out').innerHTML='<div class="kpis">'+kpi('Shape β',fmt(b,2))+kpi('Scale η',fmt(eta,1))+kpi('Mean life',fmt(mttf,1))+kpi('B10 life',fmt(b10,1))+kpi('Fit R²',fmt(r2,3),r2>0.95?'good':'warn')+(T>0?kpi('Reliability at '+T,fmt(rt*100,1)+'%',rt>=0.9?'good':'warn'):'')+'</div>'+svgWrap(W,H,s,'Weibull probability plot')+'<div class="verdict '+(r2>0.95?'good':'warn')+'">'+mode+(r2>0.95?'':' The fit is loose (R² below 0.95): the data may mix failure modes.')+'</div><p class="note">Small samples give wide confidence on β and η. Add suspended (censored) units in professional software; this page assumes every unit failed.</p>';
+}
+setupTool({},update,function(){$('#wb_data').value=EX;$('#wb_t').value=300;});
+
+</script>
+</body>
+</html>

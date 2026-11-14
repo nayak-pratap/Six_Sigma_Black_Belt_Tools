@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operational Definitions and Data Collection Plan | Black Belt Toolkit</title>
+<meta name="description" content="Write each measure so two people would collect it identically, and check the plan for the gaps that ruin data.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Tool · Measure phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Operational Definitions and Data Collection Plan</h1><p class="lead">Write each measure so two people would collect it identically, and check the plan for the gaps that ruin data.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div id="tool"><p class="note" style="margin-bottom:12px">For each measure give the operational definition (what counts, how, with which instrument), sampling, who and when. A measure is only usable when two people would record the same value. Example: measures for a chipping study.</p><div id="g"></div><div class="out" id="out" style="margin-top:16px"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var grid=gridTable({host:'g',extra:['Check'],
+ cols:[{k:'m',l:'Measure',w:130},{k:'type',l:'Type',t:'sel',o:['Y (output)','X (input)']},{k:'od',l:'Operational definition',w:260},{k:'ins',l:'Instrument / method',w:130},{k:'samp',l:'Sampling (size, frequency)',w:140},{k:'who',l:'Who',w:80},{k:'msa',l:'MSA done?',t:'sel',o:[['y','Yes'],['n','No']]}],
+ example:[{m:'Chipped insert (defect)',type:'Y (output)',od:'Any chip longer than 0.05 mm at the cutting edge seen at 20x magnification, checked on all four edges after final hone',ins:'Stereo microscope with graticule',samp:'100% of one tray per hour',who:'Inspector',msa:'y'},{m:'Sintering peak temperature',type:'X (input)',od:'Thermocouple T3 reading at peak hold, in degrees C, logged by the furnace PLC each cycle',ins:'Furnace PLC',samp:'Every cycle',who:'Auto',msa:'n'},{m:'Powder moisture',type:'X (input)',od:'Percent mass loss after 2 h at 105 C, taken from the top of each powder drum',ins:'Moisture balance',samp:'3 per lot',who:'Lab tech',msa:'n'},{m:'Operator',type:'X (input)',od:'',ins:'',samp:'',who:'',msa:'n'}],
+ compute:function(rows){
+  var bad=0,cells=rows.map(function(r){var p=[];if(String(r.od||'').length<40)p.push('definition too short or vague');if(!String(r.ins||'').trim())p.push('no instrument');if(!String(r.samp||'').trim())p.push('no sampling plan');if(r.msa!=='y'&&/Y/.test(r.type))p.push('validate the gauge');if(p.length)bad++;return[p.length?'<span style="color:var(--bad)">'+p.join('; ')+'</span>':'✓ ready'];});
+  return{cells:cells,out:'<div class="kpis">'+kpi('Measures',rows.length)+kpi('Ready to collect',rows.length-bad,bad?'warn':'good')+kpi('Need work',bad,bad?'bad':'good')+'</div><div class="verdict '+(bad?'warn':'good')+'">'+(bad?'Fix the flagged rows before collecting data: ambiguity at the start becomes noise you cannot remove later. Pilot the plan on 10 to 20 readings first.':'The plan is complete. Pilot it on a small sample and confirm the measurement system before full collection.')+'</div>'};
+ }});
+setupTool({},function(){},function(){grid.reset();});
+
+</script>
+</body>
+</html>

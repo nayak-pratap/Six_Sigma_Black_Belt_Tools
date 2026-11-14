@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benefits Tracker | Black Belt Toolkit</title>
+<meta name="description" content="Compare planned and actual monthly savings after closure, with cumulative variance and a sustain check.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Tool · Control phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Benefits Tracker</h1><p class="lead">Compare planned and actual monthly savings after closure, with cumulative variance and a sustain check.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div id="tool"><p class="note" style="margin-bottom:12px">Enter planned and finance-confirmed actual savings by month. Tracking for 6 to 12 months after closure is how a project proves it held. Example: first six months after closure.</p><div id="g"></div><div class="out" id="out" style="margin-top:16px"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var grid=gridTable({host:'g',extra:['Variance','Cumulative actual'],
+ cols:[{k:'m',l:'Month',w:90},{k:'p',l:'Planned',t:'num'},{k:'a',l:'Actual (confirmed)',t:'num'},{k:'n',l:'Note',w:200}],
+ example:[{m:'Month 1',p:50000,a:42000,n:'Ramp-up'},{m:'Month 2',p:52000,a:49500,n:''},{m:'Month 3',p:52000,a:55000,n:''},{m:'Month 4',p:52000,a:53500,n:''},{m:'Month 5',p:52000,a:38000,n:'Powder lot change, temperature drifted'},{m:'Month 6',p:52000,a:'',n:''}],
+ compute:function(rows){
+  var cum=0,pl=0,ac=0,last=null,cells=rows.map(function(r){var has=r.a!==''&&r.a!==undefined;if(has){cum+=+r.a;ac+=+r.a;pl+=+r.p||0;last=(+r.a)/(+r.p||1);}return[has?(((+r.a)-(+r.p||0))>=0?'+':'')+Math.round((+r.a)-(+r.p||0)).toLocaleString('en-US'):'—',has?Math.round(cum).toLocaleString('en-US'):'—'];});
+  var pct=pl?ac/pl*100:0,under=rows.filter(function(r){return r.a!==''&&(+r.a)<0.85*(+r.p||0);});
+  return{cells:cells,out:'<div class="kpis">'+kpi('Planned to date',Math.round(pl).toLocaleString('en-US'))+kpi('Actual to date',Math.round(ac).toLocaleString('en-US'))+kpi('Delivery',fmt(pct,0)+'%',pct>=95?'good':pct>=80?'warn':'bad')+kpi('Months below 85% of plan',under.length,under.length?'warn':'good')+'</div><div class="verdict '+(pct>=95&&!under.length?'good':'warn')+'">'+(pct>=95&&!under.length?'Savings are holding to plan.':'Savings are behind plan'+(under.length?' in '+under.map(function(r){return esc(r.m);}).join(', ')+'. Check the control chart for the Xs on those dates and trigger the reaction plan.':'.'))+'</div>'};
+ }});
+setupTool({},function(){},function(){grid.reset();});
+
+</script>
+</body>
+</html>

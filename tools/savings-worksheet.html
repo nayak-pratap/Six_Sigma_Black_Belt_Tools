@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hard and Soft Savings Worksheet | Black Belt Toolkit</title>
+<meta name="description" content="Classify project benefits as hard savings, cost avoidance or soft benefits, apply confidence, and see the number finance will accept.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Tool · Define phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Hard and Soft Savings Worksheet</h1><p class="lead">Classify project benefits as hard savings, cost avoidance or soft benefits, apply confidence, and see the number finance will accept.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div id="tool"><p class="note" style="margin-bottom:12px">List each benefit, say what type it is, enter the annual amount and your confidence. Only finance-validated hard savings should lead the business case. Example: benefits of a chipping-reduction project.</p><div id="g"></div><div class="out" id="out" style="margin-top:16px"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var T=[['hard','Hard (reduces spend or raises revenue)'],['avoid','Cost avoidance (stops a future cost)'],['soft','Soft (capacity, morale, risk)']];
+var W={hard:1,avoid:0.5,soft:0.2};
+var grid=gridTable({host:'g',extra:['Counted'],
+ cols:[{k:'b',l:'Benefit',w:220},{k:'t',l:'Type',t:'sel',o:T},{k:'a',l:'Annual amount',t:'num',min:0},{k:'c',l:'Confidence %',t:'num',min:0,max:100},{k:'f',l:'Finance validated?',t:'sel',o:[['y','Yes'],['n','No']]}],
+ example:[{b:'Scrap material cost',t:'hard',a:310000,c:90,f:'y'},{b:'Rework labour hours',t:'hard',a:95000,c:80,f:'y'},{b:'Customer returns avoided',t:'avoid',a:120000,c:60,f:'n'},{b:'Furnace capacity released',t:'soft',a:80000,c:50,f:'n'},{b:'Fewer line stoppages (operator morale)',t:'soft',a:30000,c:30,f:'n'}],
+ compute:function(rows){
+  var tot={hard:0,avoid:0,soft:0},raw=0,cells=rows.map(function(r){var a=+r.a||0,c=(+r.c||0)/100,w=W[r.t]||0,v=a*c*w*(r.t==='hard'&&r.f!=='y'?0.7:1);tot[r.t]=(tot[r.t]||0)+v;raw+=a;return[Math.round(v).toLocaleString('en-US')];});
+  var all=tot.hard+tot.avoid+tot.soft,pct=all?tot.hard/all*100:0;
+  return{cells:cells,out:'<div class="kpis">'+kpi('Claimed (face value)',Math.round(raw).toLocaleString('en-US'))+kpi('Counted hard',Math.round(tot.hard).toLocaleString('en-US'),'good')+kpi('Counted avoidance',Math.round(tot.avoid).toLocaleString('en-US'))+kpi('Counted soft',Math.round(tot.soft).toLocaleString('en-US'))+kpi('Total counted',Math.round(all).toLocaleString('en-US'))+'</div><div class="verdict '+(pct>=60?'good':'warn')+'">Hard savings are '+fmt(pct,0)+'% of the counted benefit. '+(pct>=60?'The case rests on benefits finance can see.':'Most of the case is avoidance or soft benefit: expect scrutiny. Lead the business case with hard savings only.')+' Counting weights: hard 100%, avoidance 50%, soft 20%, each multiplied by confidence; hard savings not yet validated by finance take a further 30% cut.</div>'};
+ }});
+setupTool({},function(){},function(){grid.reset();});
+
+</script>
+</body>
+</html>

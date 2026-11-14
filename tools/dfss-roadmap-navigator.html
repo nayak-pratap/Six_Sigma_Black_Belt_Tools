@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DFSS Roadmap Navigator | Black Belt Toolkit</title>
+<meta name="description" content="Compare DMADV, IDOV, DMEDI and DCOV phase by phase and see which suits a product, process or service design.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Tool · Improve phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">DFSS Roadmap Navigator</h1><p class="lead">Compare DMADV, IDOV, DMEDI and DCOV phase by phase and see which suits a product, process or service design.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field"><label for="df_m">Methodology</label><select id="df_m"><option value="DMADV">DMADV</option><option value="IDOV">IDOV</option><option value="DMEDI">DMEDI</option><option value="DCOV">DCOV</option></select></div><div class="field"><label for="df_x">What are you designing?</label><select id="df_x"><option value="prod">A physical product</option><option value="proc">A manufacturing or business process</option><option value="serv">A service or transaction</option><option value="enh">An improvement to an existing design</option></select></div></div><p class="note" style="margin-top:12px">Design for Six Sigma builds capability into a new design rather than fixing an existing one. The four common roadmaps differ in labels and emphasis more than in logic: understand customer needs, translate to CTQs, generate and select concepts, optimise and verify. Example: DMADV selected, with tools by phase.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var DF={"DMADV": ["Define \u00b7 Measure \u00b7 Analyze \u00b7 Design \u00b7 Verify", [["Define", "Project goals, customer needs, scope", "Charter, VOC, Kano"], ["Measure", "Quantify CTQs, benchmark, risks", "QFD, CTQ tree, MSA, risk analysis"], ["Analyze", "Develop and evaluate design alternatives", "Pugh, FMEA, simulation, benchmarking"], ["Design", "Detailed design, optimise, plan verification", "DOE, tolerance design, robust design, design FMEA"], ["Verify", "Pilot, validate, hand over", "Pilot, capability, control plan"]], "Replacing or radically redesigning a process or product; the most common DFSS roadmap in Six Sigma programs."], "IDOV": ["Identify \u00b7 Design \u00b7 Optimize \u00b7 Validate", [["Identify", "Customer needs and CTQs", "VOC, QFD"], ["Design", "Concept generation and selection", "TRIZ, Pugh, DFMEA"], ["Optimize", "Robust design, tolerance, reliability", "DOE, Taguchi, Monte Carlo"], ["Validate", "Prototype and pilot confirm design", "Reliability tests, pilots, control plan"]], "Product and engineering design, popular in manufacturing and product development."], "DMEDI": ["Define \u00b7 Measure \u00b7 Explore \u00b7 Develop \u00b7 Implement", [["Define", "Goals and scope", "Charter, VOC"], ["Measure", "Customer needs, CTQs", "QFD, Kano, benchmarking"], ["Explore", "Concept alternatives", "Brainstorming, TRIZ, Pugh"], ["Develop", "Detailed design, test", "Simulation, DOE, prototypes"], ["Implement", "Launch and handover", "Pilot, control plan, training"]], "Service and transactional design; the explore-and-develop split suits creative work."], "DCOV": ["Define \u00b7 Characterize \u00b7 Optimize \u00b7 Verify", [["Define", "Requirements and scope", "Charter, VOC"], ["Characterize", "Quantify design capability and system performance", "QFD, FMEA, MSA, simulation"], ["Optimize", "Reduce noise sensitivity", "DOE, Taguchi, tolerance analysis"], ["Verify", "Confirm the design meets requirements", "Capability, reliability, pilots"]], "Enhancement of existing products with a known architecture, where the focus is robustness."]};
+var REC={prod:'IDOV',proc:'DMADV',serv:'DMEDI',enh:'DCOV'};
+function update(){
+  var m=$('#df_m').value,r=REC[$('#df_x').value],d=DF[m];
+  $('#out').innerHTML='<div class="verdict '+(m===r?'good':'warn')+'">For the design you chose, the usual fit is <b>'+r+'</b>'+(m===r?'.':'. You are viewing '+m+': that is fine, the logic is the same.')+'</div><h3>'+m+': '+esc(d[0])+'</h3><p class="note">'+esc(d[2])+'</p><div class="tbl-wrap"><table><thead><tr><th>Phase</th><th>Purpose</th><th>Typical tools</th></tr></thead><tbody>'+d[1].map(function(p){return '<tr><td><b>'+esc(p[0])+'</b></td><td>'+esc(p[1])+'</td><td>'+esc(p[2])+'</td></tr>';}).join('')+'</tbody></table></div><p class="note">Common to all: voice of the customer into CTQs, concept selection with a scored matrix, FMEA on the design, DOE or simulation to optimise, and a pilot to verify. Gate each phase with a tollgate review.</p>';
+}
+setupTool({df_m:'DMADV',df_x:'proc'},update);
+
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tolerance Stack-Up and Monte Carlo | Black Belt Toolkit</title>
+<meta name="description" content="Combine component tolerances into an assembly gap with worst-case, root-sum-square and simulated results, and the share of gap variation from each part.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Improve phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Tolerance Stack-Up and Monte Carlo</h1><p class="lead">Combine component tolerances into an assembly gap with worst-case, root-sum-square and simulated results, and the share of gap variation from each part.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field"><label for="ts_lo">Gap lower limit</label><input id="ts_lo" type="number" step="any"></div><div class="field"><label for="ts_hi">Gap upper limit</label><input id="ts_hi" type="number" step="any"></div><div class="field" style="grid-column:1/-1"><label for="ts_data">One line per component: name, nominal, ± tolerance, direction (+1 adds to the gap, −1 subtracts)</label><textarea id="ts_data" rows="7"></textarea></div></div><p class="note" style="margin-top:12px">Worst case adds all tolerances: safe but costly. Root-sum-square (RSS) assumes independent, normally distributed parts with tolerance = ±3σ: realistic when many parts contribute. The Monte Carlo simulation draws 20,000 assemblies with the same assumption. Contribution = tolerance² ÷ Σ tolerance². Example: a cartridge pocket assembly (mm) with a gap limit of 0.30 to 0.50.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var EX='Holder pocket depth, 18.00, 0.05, 1\nShim, 1.20, 0.02, -1\nInsert thickness, 4.76, 0.03, -1\nClamp seat, 11.64, 0.04, -1\nSeat face offset, 0.00, 0.02, 1';
+function update(){
+  var lo=val('ts_lo'),hi=val('ts_hi'),rows=$('#ts_data').value.split(/\n/).map(function(l){var a=l.split(',').map(function(s){return s.trim();});return a.length>=4?{n:a[0],nom:parseFloat(a[1]),tol:parseFloat(a[2]),d:parseFloat(a[3])>=0?1:-1}:null;}).filter(function(r){return r&&isFinite(r.nom)&&r.tol>=0;});
+  if(rows.length<2||!(hi>lo)){$('#out').innerHTML='<p class="note">Enter gap limits (upper above lower) and at least two components in the form: name, nominal, tolerance, direction.</p>';return;}
+  var nom=rows.reduce(function(s,r){return s+r.d*r.nom;},0),wc=rows.reduce(function(s,r){return s+r.tol;},0),rss=Math.sqrt(rows.reduce(function(s,r){return s+r.tol*r.tol;},0)),sg=rss/3,ssq=rows.reduce(function(s,r){return s+r.tol*r.tol;},0);
+  var rnd=mulberry(99),sim=[],bad=0,N=20000;for(var i=0;i<N;i++){var g=0;rows.forEach(function(r){g+=r.d*(r.nom+gaussR(rnd)*r.tol/3);});sim.push(g);if(g<lo||g>hi)bad++;}
+  var sm=mean(sim),ss=sdev(sim),pOut=(normCdf((lo-nom)/sg)+1-normCdf((hi-nom)/sg)),wcOk=nom-wc>=lo&&nom+wc<=hi;
+  var bins=24,mn=Math.min.apply(null,sim),mxv=Math.max.apply(null,sim),bw=(mxv-mn)/bins||1,cnt=new Array(bins).fill(0);sim.forEach(function(v){cnt[Math.min(bins-1,Math.floor((v-mn)/bw))]++;});
+  var W=520,H=210,x0=Math.min(lo,mn),x1=Math.max(hi,mxv),f=frame(W,H,x0,x1,0,Math.max.apply(null,cnt),{xl:'Assembly gap',mb:34}),s=f.base;cnt.forEach(function(c,i){var xa=mn+i*bw,out=xa+bw/2<lo||xa+bw/2>hi;s+='<rect x="'+(f.xs(xa)+1)+'" y="'+f.ys(c)+'" width="'+Math.max(1,f.xs(xa+bw)-f.xs(xa)-2)+'" height="'+(f.ys(0)-f.ys(c))+'" style="fill:'+(out?'var(--bad)':'var(--accent)')+';opacity:.7"/>';});
+  [lo,hi].forEach(function(v){s+='<line x1="'+f.xs(v)+'" x2="'+f.xs(v)+'" y1="'+f.mt+'" y2="'+f.ys(0)+'" style="stroke:var(--bad);stroke-dasharray:5 3"/>';});
+  var cons=rows.slice().sort(function(a,b){return b.tol-a.tol;});
+  $('#out').innerHTML='<div class="kpis">'+kpi('Nominal gap',fmt(nom,3))+kpi('Worst case range',fmt(nom-wc,3)+' to '+fmt(nom+wc,3),wcOk?'good':'warn')+kpi('RSS range (±3σ)',fmt(nom-rss,3)+' to '+fmt(nom+rss,3))+kpi('Simulated out of limits',fmt(bad/N*100,2)+'%',bad/N<0.0027?'good':'warn')+kpi('Estimated PPM (RSS)',Math.round(pOut*1e6).toLocaleString('en-US'))+'</div>'+svgWrap(W,H,s,'Simulated assembly gap')+
+  hbars(cons.map(function(r){return{l:r.n,v:r.tol*r.tol/ssq*100};}),function(v){return fmt(v,0)+'%';})+'<div class="verdict '+(wcOk?'good':bad/N<0.0027?'warn':'bad')+'">'+(wcOk?'Even the worst case stays inside the limits.':bad/N<0.0027?'Worst case can exceed the limits, but statistically about '+fmt(bad/N*100,2)+'% of assemblies fall out: acceptable only if the parts really are centred and independent.':'Too many assemblies fall outside the limits. Tighten the tolerance of the largest contributor first (top bar).')+'</div><p class="note">Contribution bars show the share of gap variance. Tightening a small contributor barely helps. Real parts are often off-centre: add a mean shift to the nominal to test this.</p>';
+}
+setupTool({},update,function(){$('#ts_lo').value=0.3;$('#ts_hi').value=0.5;$('#ts_data').value=EX;});
+
+</script>
+</body>
+</html>

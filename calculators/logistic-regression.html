@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Binary Logistic Regression | Black Belt Toolkit</title>
+<meta name="description" content="Model a pass/fail outcome from one to three predictors: odds ratios, p-values and predicted probability for chosen settings.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Analyze phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Binary Logistic Regression</h1><p class="lead">Model a pass/fail outcome from one to three predictors: odds ratios, p-values and predicted probability for chosen settings.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field" style="grid-column:1/-1"><label for="lg_data">Data: first column Y (1 = defect, 0 = good), then X columns, header row first.</label><textarea id="lg_data" rows="12"></textarea></div><div class="field"><label for="lg_p1">Predict at X1 =</label><input id="lg_p1" type="number" step="any"></div><div class="field"><label for="lg_p2">Predict at X2 (if present)</label><input id="lg_p2" type="number" step="any"></div><div class="field"><label for="lg_p3">Predict at X3 (if present)</label><input id="lg_p3" type="number" step="any"></div></div><p class="note" style="margin-top:12px">ln(p ÷ (1 − p)) = b0 + b1·X1 + … fitted by iteratively reweighted least squares. The odds ratio for X is e^b: the multiple by which the odds of Y = 1 change for a one-unit increase. The G test compares with a model of no predictors. Example: whether an insert fails (1) given its edge-hone radius (µm) and sintering temperature (hundreds of °C above 1,300).</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+function mk(){var r=mulberry(11),L=['fail,hone,temp'];for(var i=0;i<80;i++){var h=24+r()*14,t=1.0+r()*1.6,z=-1+0.3*(h-31)-1.8*(t-1.8)+gaussR(r)*0.3,p=1/(1+Math.exp(-z)),y=r()<p?1:0;L.push(y+','+h.toFixed(1)+','+t.toFixed(2));}return L.join('\n');}
+var EX=mk();
+function pt(s){var L=s.split(/\n/).map(function(l){return l.trim();}).filter(Boolean);if(L.length<2)return null;var sp=function(l){return l.split(/[,\t; ]+/).filter(Boolean);},hd=sp(L[0]),rows=L.slice(1).map(function(l){return sp(l).map(parseFloat);}).filter(function(r){return r.length===hd.length&&r.every(isFinite);});return{hd:hd,rows:rows};}
+function update(){
+  var T=pt($('#lg_data').value);
+  if(!T||T.hd.length<2||T.hd.length>4||T.rows.length<10){$('#out').innerHTML='<p class="note">Need a header, a Y column, 1 to 3 X columns and at least 10 rows.</p>';return;}
+  var y=T.rows.map(function(r){return r[0];});if(y.some(function(v){return v!==0&&v!==1;})){$('#out').innerHTML='<p class="note">The first column must contain only 0 and 1.</p>';return;}
+  var n1=y.reduce(function(a,b){return a+b;},0);if(n1===0||n1===y.length){$('#out').innerHTML='<p class="note">Y has only one value, so there is nothing to model.</p>';return;}
+  var X=T.rows.map(function(r){return r.slice(1);}),m=logit(X,y);
+  if(!m){$('#out').innerHTML='<p class="note">The fit failed: predictors may be perfectly separating or collinear.</p>';return;}
+  var names=['Constant'].concat(T.hd.slice(1)),pts=[val('lg_p1'),val('lg_p2'),val('lg_p3')],e=m.b[0],ok=true;for(var j=1;j<m.b.length;j++){if(!isFinite(pts[j-1]))ok=false;else e+=m.b[j]*pts[j-1];}
+  var pr=ok?1/(1+Math.exp(-e)):NaN,sig=m.pG<0.05;
+  $('#out').innerHTML='<div class="kpis">'+kpi('G (model χ²)',fmt(m.G,2))+kpi('p (G)',pstr(m.pG),sig?'good':'warn')+kpi('McFadden R²',fmt(m.mcf,3))+kpi('Defect rate in data',fmt(n1/y.length*100,1)+'%')+'</div>'+
+  '<div class="tbl-wrap"><table><thead><tr><th>Term</th><th class="num">b</th><th class="num">SE</th><th class="num">z</th><th class="num">p</th><th class="num">Odds ratio</th></tr></thead><tbody>'+names.map(function(n,i){return '<tr><td>'+esc(n)+'</td><td class="num">'+fmt(m.b[i],4)+'</td><td class="num">'+fmt(m.se[i],4)+'</td><td class="num">'+fmt(m.z[i],2)+'</td><td class="num">'+pstr(m.p[i])+'</td><td class="num">'+(i?fmt(m.or[i],3):'')+'</td></tr>';}).join('')+'</tbody></table></div>'+
+  '<div class="verdict '+(sig?'good':'warn')+'">'+(sig?'The predictors together explain the outcome better than chance. ':'The model is not clearly better than no predictors. ')+(ok?'At the settings entered, the predicted probability of Y = 1 is <b>'+fmt(pr*100,1)+'%</b>.':'Enter predictor values to get a predicted probability.')+'</div><p class="note">An odds ratio above 1 raises the odds of the event; below 1 lowers them. Odds ratios are not risk ratios when the event is common. Use at least 10 events per predictor.</p>';
+}
+setupTool({},update,function(){$('#lg_data').value=EX;$('#lg_p1').value=32;$('#lg_p2').value=1.6;$('#lg_p3').value='';});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EWMA and CUSUM Charts | Black Belt Toolkit</title>
+<meta name="description" content="Detect small, sustained shifts that Shewhart charts miss, with an EWMA chart and a tabular CUSUM.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Control phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">EWMA and CUSUM Charts</h1><p class="lead">Detect small, sustained shifts that Shewhart charts miss, with an EWMA chart and a tabular CUSUM.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field"><label for="ec_mu">Target mean μ0</label><input id="ec_mu" type="number" step="any"></div><div class="field"><label for="ec_sd">Process σ (individual values)</label><input id="ec_sd" type="number" step="any" min="0"></div><div class="field"><label for="ec_l">EWMA λ (0.05 to 0.4)</label><input id="ec_l" type="number" step="any" min="0.01" max="1" step="0.01"></div><div class="field"><label for="ec_L">EWMA limit width L (about 2.7 to 3)</label><input id="ec_L" type="number" step="any"></div><div class="field"><label for="ec_k">CUSUM reference k (in σ units, usually 0.5)</label><input id="ec_k" type="number" step="any"></div><div class="field"><label for="ec_h">CUSUM decision limit h (in σ units, usually 4 or 5)</label><input id="ec_h" type="number" step="any"></div><div class="field" style="grid-column:1/-1"><label for="ec_data">Individual readings in time order</label><textarea id="ec_data" rows="6"></textarea></div></div><p class="note" style="margin-top:12px">EWMA: zᵢ = λxᵢ + (1 − λ)zᵢ₋₁ with limits μ0 ± Lσ√[λ/(2 − λ)·(1 − (1 − λ)²ⁱ)]. CUSUM: C⁺ᵢ = max(0, xᵢ − (μ0 + kσ) + C⁺ᵢ₋₁), C⁻ similarly; signal when either exceeds hσ. Both react faster than a Shewhart chart to a shift of about 0.5σ to 1.5σ. Example: 40 readings with a 0.8σ upward shift from reading 21.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+function mk(){var r=mulberry(52),a=[];for(var i=0;i<40;i++)a.push((50+(i>=20?2.4:0)+gaussR(r)*2).toFixed(2));return a.join(' ');}
+var EX=mk();
+function line(f,v,st,W){return '<polyline points="'+v.map(function(y,i){return f.xs(i+1)+','+f.ys(y);}).join(' ')+'" style="'+st+'"/>';}
+function update(){
+  var mu=val('ec_mu'),sd=val('ec_sd'),lam=val('ec_l'),L=val('ec_L'),k=val('ec_k'),hh=val('ec_h'),x=parseNums($('#ec_data').value);
+  if(!(sd>0&&lam>0&&lam<=1&&L>0&&k>=0&&hh>0&&x.length>=8&&mu===mu)){$('#out').innerHTML='<p class="note">Enter μ0, positive σ, λ between 0 and 1, positive L, k and h, and at least 8 readings.</p>';return;}
+  var z=[],ul=[],ll=[],zi=mu,cp=[],cn=[],P=0,N=0,fe=null,fc=null;
+  x.forEach(function(v,i){zi=lam*v+(1-lam)*zi;z.push(zi);var w=L*sd*Math.sqrt(lam/(2-lam)*(1-Math.pow(1-lam,2*(i+1))));ul.push(mu+w);ll.push(mu-w);if((zi>mu+w||zi<mu-w)&&fe===null)fe=i+1;
+    P=Math.max(0,v-(mu+k*sd)+P);N=Math.max(0,(mu-k*sd)-v+N);cp.push(P/sd);cn.push(N/sd);if((P>hh*sd||N>hh*sd)&&fc===null)fc=i+1;});
+  var W=560,H=210,lo=Math.min(Math.min.apply(null,ll),Math.min.apply(null,z)),hi=Math.max(Math.max.apply(null,ul),Math.max.apply(null,z)),pd=(hi-lo)*.1||1,f=frame(W,H,1,x.length,lo-pd,hi+pd,{xl:'Reading',mb:34}),s=f.base;
+  s+=line(f,ul,'fill:none;stroke:var(--bad);stroke-dasharray:5 3')+line(f,ll,'fill:none;stroke:var(--bad);stroke-dasharray:5 3')+'<line x1="'+f.ml+'" x2="'+(W-f.mr)+'" y1="'+f.ys(mu)+'" y2="'+f.ys(mu)+'" style="stroke:var(--ink-2)"/>'+line(f,z,'fill:none;stroke:var(--accent);stroke-width:2');
+  z.forEach(function(v,i){var bad=v>ul[i]||v<ll[i];s+='<circle cx="'+f.xs(i+1)+'" cy="'+f.ys(v)+'" r="'+(bad?4.5:2.5)+'" style="fill:'+(bad?'var(--bad)':'var(--accent)')+'"/>';});
+  var mx=Math.max(hh*1.4,Math.max.apply(null,cp.concat(cn))*1.1),f2=frame(W,H,1,x.length,0,mx,{xl:'Reading',yl:'C (σ units)',mb:34}),s2=f2.base+'<line x1="'+f2.ml+'" x2="'+(W-f2.mr)+'" y1="'+f2.ys(hh)+'" y2="'+f2.ys(hh)+'" style="stroke:var(--bad);stroke-dasharray:5 3"/>'+line(f2,cp,'fill:none;stroke:var(--accent);stroke-width:2')+line(f2,cn,'fill:none;stroke:var(--warn);stroke-width:2');
+  $('#out').innerHTML='<div class="kpis">'+kpi('EWMA first signal',fe?'reading '+fe:'none',fe?'warn':'good')+kpi('CUSUM first signal',fc?'reading '+fc:'none',fc?'warn':'good')+kpi('Readings',x.length)+'</div>'+svgWrap(W,H,s,'EWMA chart')+svgWrap(W,H,s2,'CUSUM chart')+'<div class="verdict '+(fe||fc?'warn':'good')+'">'+(fe||fc?'Shift detected'+(fe?' by EWMA at reading '+fe:'')+(fc?(fe?' and':'')+' by CUSUM at reading '+fc:'')+'. The CUSUM start of drift is roughly where C⁺ last left zero before the signal. Investigate what changed then.':'No signal. The process looks steady against the target.')+'</div><p class="note">The blue line in the lower chart is C⁺ (upward drift); the amber line is C⁻ (downward). Use a smaller λ for smaller shifts. These charts assume individual, roughly independent readings; strongly autocorrelated data need residual charts.</p>';
+}
+setupTool({},update,function(){$('#ec_mu').value=50;$('#ec_sd').value=2;$('#ec_l').value=0.2;$('#ec_L').value=2.86;$('#ec_k').value=0.5;$('#ec_h').value=5;$('#ec_data').value=EX;});
+
+</script>
+</body>
+</html>

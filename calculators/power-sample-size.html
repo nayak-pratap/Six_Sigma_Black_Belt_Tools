@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Power and Sample Size | Black Belt Toolkit</title>
+<meta name="description" content="How many samples to detect a difference in means or proportions, and what power a given sample really gives.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Analyze phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Power and Sample Size</h1><p class="lead">How many samples to detect a difference in means or proportions, and what power a given sample really gives.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field"><label for="pw_mode">Test</label><select id="pw_mode"><option value="t2">Two means (two-sample t)</option><option value="p2">Two proportions</option></select></div><div class="field"><label for="pw_solve">Solve for</label><select id="pw_solve"><option value="n">Sample size per group</option><option value="pow">Power for a given n</option></select></div><div class="field"><label for="pw_delta">Difference to detect (means: units; proportions: use p1 and p2 below)</label><input id="pw_delta" type="number" step="any"></div><div class="field"><label for="pw_sd">Standard deviation (means)</label><input id="pw_sd" type="number" step="any" min="0"></div><div class="field"><label for="pw_p1">Proportion 1 (e.g. 0.05)</label><input id="pw_p1" type="number" step="any" min="0" max="1"></div><div class="field"><label for="pw_p2">Proportion 2</label><input id="pw_p2" type="number" step="any" min="0" max="1"></div><div class="field"><label for="pw_n">Sample size per group (when solving for power)</label><input id="pw_n" type="number" step="any" min="2" step="1"></div><div class="field"><label for="pw_a">α</label><select id="pw_a"><option value="0.10">0.10</option><option value="0.05">0.05</option><option value="0.01">0.01</option></select></div><div class="field"><label for="pw_pow">Target power</label><select id="pw_pow"><option value="0.80">80%</option><option value="0.90">90%</option><option value="0.95">95%</option></select></div></div><p class="note" style="margin-top:12px">Power is the chance of detecting a real difference of the stated size. Means: uses the t distribution with a normal approximation of the non-central part (accurate to about one sample). Proportions: normal approximation, so avoid rare events with tiny n. Example: detect a 0.3 µm shift in hone radius when σ = 0.5 µm.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+function update(){
+  var mode=$('#pw_mode').value,solve=$('#pw_solve').value,al=parseFloat($('#pw_a').value),tp=parseFloat($('#pw_pow').value),h='';
+  if(mode==='t2'){var d=val('pw_delta'),sd=val('pw_sd');if(!(d>0&&sd>0)){$('#out').innerHTML='<p class="note">Enter a positive difference and standard deviation.</p>';return;}
+    if(solve==='n'){var n=n2t(d,sd,al,tp);h='<div class="kpis">'+kpi('n per group',n,'good')+kpi('Total n',2*n)+kpi('Effect size d',fmt(d/sd,2))+'</div>';}
+    else{var nn=val('pw_n');if(!(nn>=2)){$('#out').innerHTML='<p class="note">Enter n of at least 2.</p>';return;}var pw=power2t(d,sd,Math.round(nn),al);h='<div class="kpis">'+kpi('Power',fmt(pw*100,1)+'%',pw>=0.8?'good':'warn')+kpi('Effect size d',fmt(d/sd,2))+kpi('n per group',Math.round(nn))+'</div>'+'<div class="verdict '+(pw>=0.8?'good':'warn')+'">'+(pw>=0.8?'Adequate power.':'Under 80% power: a real difference of this size would be missed more than one time in five.')+'</div>';}
+    var rows=[0.5,0.75,1,1.5,2].map(function(k){var dd=d*k;return '<tr><td class="num">'+fmt(dd,3)+'</td><td class="num">'+n2t(dd,sd,al,tp)+'</td></tr>';}).join('');
+    h+='<div class="tbl-wrap"><table><thead><tr><th class="num">Difference</th><th class="num">n per group for target power</th></tr></thead><tbody>'+rows+'</tbody></table></div><p class="note">Halving the difference you want to detect roughly quadruples the sample.</p>';}
+  else{var p1=val('pw_p1'),p2=val('pw_p2');if(!(p1>0&&p1<1&&p2>0&&p2<1&&p1!==p2)){$('#out').innerHTML='<p class="note">Enter two different proportions between 0 and 1.</p>';return;}
+    var za=normInv(1-al/2),pb=(p1+p2)/2,q=function(zb){return Math.pow(za*Math.sqrt(2*pb*(1-pb))+zb*Math.sqrt(p1*(1-p1)+p2*(1-p2)),2)/Math.pow(p1-p2,2);};
+    if(solve==='n'){var n2=Math.ceil(q(normInv(tp)));h='<div class="kpis">'+kpi('n per group',n2,'good')+kpi('Total n',2*n2)+kpi('Difference',fmt(Math.abs(p1-p2),4))+'</div>';}
+    else{var nn2=val('pw_n');if(!(nn2>=2)){$('#out').innerHTML='<p class="note">Enter n of at least 2.</p>';return;}var zb=(Math.abs(p1-p2)*Math.sqrt(nn2)-za*Math.sqrt(2*pb*(1-pb)))/Math.sqrt(p1*(1-p1)+p2*(1-p2)),pw2=normCdf(zb);h='<div class="kpis">'+kpi('Power',fmt(pw2*100,1)+'%',pw2>=0.8?'good':'warn')+kpi('n per group',Math.round(nn2))+'</div>';}
+    h+='<p class="note">Detecting a change between rare defect rates needs large samples: compare 5% with 3% and 0.5% with 0.3% to see.</p>';}
+  $('#out').innerHTML=h;
+}
+setupTool({pw_mode:'t2',pw_solve:'n',pw_delta:0.3,pw_sd:0.5,pw_p1:0.05,pw_p2:0.03,pw_n:20,pw_a:'0.05',pw_pow:'0.80'},update);
+
+</script>
+</body>
+</html>

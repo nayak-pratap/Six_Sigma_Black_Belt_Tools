@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>t-Tests: One-Sample, Paired, Two-Sample | Black Belt Toolkit</title>
+<meta name="description" content="Run a one-sample, paired or two-sample (Welch) t-test directly from raw data, with confidence interval and a plain-language verdict.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Analyze phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">t-Tests: One-Sample, Paired, Two-Sample</h1><p class="lead">Run a one-sample, paired or two-sample (Welch) t-test directly from raw data, with confidence interval and a plain-language verdict.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field"><label for="tt_mode">Test</label><select id="tt_mode"><option value="two">Two-sample (Welch)</option><option value="one">One-sample against a target</option><option value="pair">Paired (same units before and after)</option></select></div><div class="field"><label for="tt_mu">Target value (one-sample only)</label><input id="tt_mu" type="number" step="any"></div><div class="field"><label for="tt_a">Significance level α</label><select id="tt_a"><option value="0.10">0.10</option><option value="0.05">0.05</option><option value="0.01">0.01</option></select></div><div class="field"><label for="tt_alt">Alternative</label><select id="tt_alt"><option value="ne">Not equal (two-sided)</option><option value="gt">Greater than</option><option value="lt">Less than</option></select></div><div class="field" style="grid-column:1/-1"><label for="tt_x">Sample 1 (or "before")</label><textarea id="tt_x" rows="4"></textarea></div><div class="field" style="grid-column:1/-1"><label for="tt_y">Sample 2 (or "after"; ignored for one-sample)</label><textarea id="tt_y" rows="4"></textarea></div></div><p class="note" style="margin-top:12px">Paired tests require equal-length lists in the same order. One-sided p-values halve the two-sided p when the sign agrees. The confidence interval is always two-sided at 1 − α. Example: tool life in minutes for two coatings (Welch), which is the default.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var EXD={tt_x:'10.2 9.8 10.5 10.1 9.9 10.4 10.0 10.3 9.7 10.2 10.6 10.1',tt_y:'9.6 9.9 9.4 9.8 9.5 9.7 10.0 9.3 9.6 9.9 9.5 9.8 9.4 9.7',tt_mu:10,tt_a:'0.05',tt_mode:'two',tt_alt:'ne'};
+function update(){
+  var m=$('#tt_mode').value,a=parseFloat($('#tt_a').value),alt=$('#tt_alt').value,x=parseNums($('#tt_x').value),y=parseNums($('#tt_y').value),mu=val('tt_mu'),d,se,df,t,name;
+  if(m==='one'){if(x.length<2||mu!==mu){$('#out').innerHTML='<p class="note">Need at least 2 values and a target.</p>';return;}d=mean(x)-mu;se=sdev(x)/Math.sqrt(x.length);df=x.length-1;name='One-sample t-test';}
+  else if(m==='pair'){if(x.length!==y.length||x.length<2){$('#out').innerHTML='<p class="note">Paired data need two equal-length lists of at least 2 pairs. You have '+x.length+' and '+y.length+'.</p>';return;}var df_=x.map(function(v,i){return v-y[i];});d=mean(df_);se=sdev(df_)/Math.sqrt(df_.length);df=df_.length-1;name='Paired t-test';}
+  else{if(x.length<2||y.length<2){$('#out').innerHTML='<p class="note">Each sample needs at least 2 values.</p>';return;}var v1=Math.pow(sdev(x),2)/x.length,v2=Math.pow(sdev(y),2)/y.length;d=mean(x)-mean(y);se=Math.sqrt(v1+v2);df=Math.pow(v1+v2,2)/(v1*v1/(x.length-1)+v2*v2/(y.length-1));name='Welch two-sample t-test';}
+  if(!(se>0)){$('#out').innerHTML='<p class="note">No variation in the data: the standard error is zero.</p>';return;}
+  t=d/se;var p2=tTwoSidedP(t,df),p=alt==='ne'?p2:((alt==='gt'&&t>0)||(alt==='lt'&&t<0)?p2/2:1-p2/2),tc=tInv(1-a/2,df),sig=p<a;
+  $('#out').innerHTML='<h3>'+name+'</h3><div class="kpis">'+kpi('t',fmt(t,3))+kpi('df',fmt(df,1))+kpi('p-value',pstr(p),sig?'good':'warn')+kpi('Estimate',fmt(d,4))+'</div><div class="kpis">'+kpi((100*(1-a)).toFixed(0)+'% CI low',fmt(d-tc*se,4))+kpi('CI high',fmt(d+tc*se,4))+kpi('Mean 1',fmt(mean(x),4))+(m==='two'?kpi('Mean 2',fmt(mean(y),4)):'')+'</div>'+
+  '<div class="verdict '+(sig?'good':'warn')+'">'+(sig?'p < α: reject H0. The estimated difference is '+fmt(d,3)+'; judge whether it matters in practice, not only whether it is statistically significant.':'p ≥ α: fail to reject H0. That is not proof of no difference. If the sample is small, check power on the Power and Sample Size page.')+'</div><p class="note">Check roughly normal data (use the normality page) or switch to the non-parametric page. Independence matters more than normality.</p>';
+}
+setupTool({},update,function(){Object.keys(EXD).forEach(function(k){$('#'+k).value=EXD[k];});});
+
+</script>
+</body>
+</html>

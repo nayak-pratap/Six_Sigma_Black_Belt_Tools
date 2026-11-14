@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Multi-Vari Analysis | Black Belt Toolkit</title>
+<meta name="description" content="Find the family of variation that matters most: within a piece, between pieces, or over time, from labelled readings.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Analyze phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Multi-Vari Analysis</h1><p class="lead">Find the family of variation that matters most: within a piece, between pieces, or over time, from labelled readings.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field" style="grid-column:1/-1"><label for="mv_data">Header row then one line per reading: factor1 factor2 factor3 value. Name the factors in the header.</label><textarea id="mv_data" rows="12"></textarea></div></div><p class="note" style="margin-top:12px">The multi-vari study samples across time, between parts and within a part, then shows which family drives the spread. For each factor, the page reports the share of total variation explained by its level means (SS between ÷ SS total) and the range of its level means. The biggest share points to where to look first. Example: bore diameter by position along the bore, part within the hour, and hour.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+function mk(){var r=mulberry(77),L=['Position Part Hour Value'],hb=[0,0.01,0.03,0.12],pb=[];for(var h=0;h<4;h++)for(var p=0;p<3;p++){var pe=gaussR(r)*0.01;for(var po=0;po<3;po++)L.push(['top|mid|bot'.split('|')[po],'P'+(p+1),'H'+(h+1),(10+hb[h]+pe+[0.03,0,-0.03][po]+gaussR(r)*0.004).toFixed(3)].join(' '));}return L.join('\n');}
+var EX=mk();
+function update(){
+  var L=$('#mv_data').value.split(/\n/).map(function(l){return l.trim().split(/[\s,;]+/);}).filter(function(a){return a.length>=2;});
+  if(L.length<9){$('#out').innerHTML='<p class="note">Need a header and at least 8 readings.</p>';return;}
+  var hd=L[0],nf=hd.length-1,rows=L.slice(1).filter(function(a){return a.length===hd.length&&isFinite(parseFloat(a[nf]));});
+  if(nf<1||nf>4||rows.length<8){$('#out').innerHTML='<p class="note">Use 1 to 4 factor columns plus a numeric value, with a matching header, and at least 8 complete rows.</p>';return;}
+  var y=rows.map(function(r){return parseFloat(r[nf]);}),gm=mean(y),sst=y.reduce(function(s,v){return s+Math.pow(v-gm,2);},0);if(!(sst>0)){$('#out').innerHTML='<p class="note">No variation in the values.</p>';return;}
+  var res=[];for(var f=0;f<nf;f++){var lv={};rows.forEach(function(r,i){(lv[r[f]]=lv[r[f]]||[]).push(y[i]);});var ks=Object.keys(lv),ssb=0,ms=[];ks.forEach(function(k){var m=mean(lv[k]);ms.push(m);ssb+=lv[k].length*Math.pow(m-gm,2);});res.push({n:hd[f],sh:ssb/sst*100,rg:Math.max.apply(null,ms)-Math.min.apply(null,ms),lv:ks.map(function(k,i){return[k,ms[i]];})});}
+  res.sort(function(a,b){return b.sh-a.sh;});var top=res[0];
+  $('#out').innerHTML='<div class="kpis">'+kpi('Readings',y.length)+kpi('Total σ',fmt(Math.sqrt(sst/(y.length-1)),4))+kpi('Biggest family',esc(top.n)+' '+fmt(top.sh,0)+'%','warn')+'</div>'+hbars(res.map(function(r){return{l:r.n,v:r.sh};}),function(v){return fmt(v,0)+'%';})+'<div class="tbl-wrap"><table><thead><tr><th>Factor</th><th class="num">% of variation</th><th class="num">Range of level means</th><th>Level means</th></tr></thead><tbody>'+res.map(function(r){return '<tr><td>'+esc(r.n)+'</td><td class="num">'+fmt(r.sh,1)+'%</td><td class="num">'+fmt(r.rg,4)+'</td><td>'+r.lv.map(function(q){return esc(q[0])+': '+fmt(q[1],3);}).join(' · ')+'</td></tr>';}).join('')+'</tbody></table></div><div class="verdict warn">Start with <b>'+esc(top.n)+'</b>: it carries '+fmt(top.sh,0)+'% of the variation. Shares are marginal and can overlap, so confirm suspects with a designed experiment or ANOVA.</div>';
+}
+setupTool({},update,function(){$('#mv_data').value=EX;});
+
+</script>
+</body>
+</html>

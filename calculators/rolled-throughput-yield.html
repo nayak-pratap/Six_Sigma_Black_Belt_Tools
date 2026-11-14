@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rolled Throughput Yield | Black Belt Toolkit</title>
+<meta name="description" content="Combine first-pass yields of each process step into RTY, normalised yield, DPMO and sigma level, and find the weakest step.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Measure phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Rolled Throughput Yield</h1><p class="lead">Combine first-pass yields of each process step into RTY, normalised yield, DPMO and sigma level, and find the weakest step.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field" style="grid-column:1/-1"><label for="ry_data">One line per step: name, units in, units passed first time (no rework)</label><textarea id="ry_data" rows="8"></textarea></div><div class="field"><label for="ry_opp">Opportunities per unit (for DPMO)</label><input id="ry_opp" type="number" step="any" min="1" step="1"></div></div><p class="note" style="margin-top:12px">First-pass yield (FPY) of a step = good first time ÷ units in. RTY = FPY₁ × FPY₂ × …: the probability a unit passes every step with no rework. Normalised yield = RTY^(1/steps), the average yield per step. A line with five steps at 95% each has an RTY of only 77%. Example: six steps making a coated insert.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var EX='Press, 1000, 982\nSinter, 982, 955\nGrind, 955, 921\nHone, 921, 880\nCoat, 880, 861\nInspect and pack, 861, 855';
+function update(){
+  var rows=$('#ry_data').value.split(/\n/).map(function(l){var a=l.split(',').map(function(s){return s.trim();});return a.length>=3?{n:a[0],i:parseFloat(a[1]),g:parseFloat(a[2])}:null;}).filter(function(r){return r&&r.i>0&&r.g>=0&&r.g<=r.i;}),opp=val('ry_opp')||1;
+  if(rows.length<2){$('#out').innerHTML='<p class="note">Enter at least 2 steps: name, units in, units passed first time (passed cannot exceed in).</p>';return;}
+  var rty=1;rows.forEach(function(r){r.f=r.g/r.i;rty*=r.f;});var ny=Math.pow(rty,1/rows.length),dpmo=(1-ny)/opp*1e6,sg=ny>0&&ny<1?normInv(ny)+1.5:NaN,wk=rows.slice().sort(function(a,b){return a.f-b.f;})[0],cls=rty>=0.9?'good':rty>=0.7?'warn':'bad';
+  $('#out').innerHTML='<div class="kpis">'+kpi('RTY',fmt(rty*100,1)+'%',cls)+kpi('Normalised yield / step',fmt(ny*100,2)+'%')+kpi('Weakest step',esc(wk.n)+' '+fmt(wk.f*100,1)+'%','warn')+kpi('Process sigma (with 1.5σ shift)',isFinite(sg)?fmt(sg,2):'n/a')+kpi('DPMO per step',isFinite(dpmo)?Math.round(dpmo).toLocaleString('en-US'):'n/a')+'</div>'+hbars(rows.map(function(r){return{l:r.n,v:(1-r.f)*100};}),function(v){return fmt(v,1)+'% lost';})+'<div class="verdict '+cls+'">Only <b>'+fmt(rty*100,1)+'%</b> of units pass every step first time; the other '+fmt((1-rty)*100,1)+'% need rework or are scrapped, and that hidden factory costs time and money. Fix <b>'+esc(wk.n)+'</b> first, but look at every step: small losses multiply.</div><p class="note">Final-inspection yield alone (here '+fmt(rows[rows.length-1].g/rows[rows.length-1].i*100,1)+'%) hides rework earlier in the line. Count rework as a failure.</p>';
+}
+setupTool({},update,function(){$('#ry_data').value=EX;$('#ry_opp').value=1;});
+
+</script>
+</body>
+</html>

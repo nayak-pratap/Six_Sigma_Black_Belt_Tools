@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attribute Agreement (Cohen’s Kappa) | Black Belt Toolkit</title>
+<meta name="description" content="Check whether appraisers agree with each other and with the known standard when judging pass/fail or grades.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Measure phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Attribute Agreement (Cohen’s Kappa)</h1><p class="lead">Check whether appraisers agree with each other and with the known standard when judging pass/fail or grades.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field" style="grid-column:1/-1"><label for="aa_data">One line per item: Standard Rater1 Rater2 [Rater3]. Use any labels (e.g. P and F).</label><textarea id="aa_data" rows="12"></textarea></div></div><p class="note" style="margin-top:12px">Percent agreement ignores agreement by chance. Cohen’s kappa corrects for it: κ = (observed − chance) ÷ (1 − chance). Rule of thumb: above 0.90 excellent, 0.70 to 0.90 acceptable, below 0.70 improve the standard or train the appraisers. Each rater is compared with the standard, and every pair of raters with each other. Example: 30 inserts judged pass (P) or fail (F) by three inspectors against a master panel.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+function mk(){var r=mulberry(8),L=[];for(var i=0;i<30;i++){var s=r()<0.4?'F':'P',row=[s];[0.02,0.05,0.12].forEach(function(e){row.push(r()<e?(s==='P'?'F':'P'):s);});L.push(row.join(' '));}return L.join('\n');}
+var EX=mk();
+function kap(a,b){var n=a.length,lv=[],i;a.concat(b).forEach(function(v){if(lv.indexOf(v)<0)lv.push(v);});var po=0;for(i=0;i<n;i++)if(a[i]===b[i])po++;po/=n;var pe=0;lv.forEach(function(l){pe+=(a.filter(function(v){return v===l;}).length/n)*(b.filter(function(v){return v===l;}).length/n);});return{po:po,k:pe<1?(po-pe)/(1-pe):1};}
+function update(){
+  var rows=$('#aa_data').value.split(/\n/).map(function(l){return l.trim().split(/[\s,;]+/).filter(Boolean);}).filter(function(a){return a.length>=3;}),m=rows.length?rows[0].length:0;
+  if(rows.length<10||rows.some(function(r){return r.length!==m;})||m>5){$('#out').innerHTML='<p class="note">Need at least 10 items, each line with the standard plus 2 to 4 raters, all lines the same width.</p>';return;}
+  var col=function(j){return rows.map(function(r){return r[j];});},h='',allOk=rows.filter(function(r){return r.slice(1).every(function(v){return v===r[0];});}).length;
+  var tb='<div class="tbl-wrap"><table><thead><tr><th>Comparison</th><th class="num">% agree</th><th class="num">Kappa</th><th>Rating</th></tr></thead><tbody>',worst=1;
+  for(var i=0;i<m;i++)for(var j=i+1;j<m;j++){var k=kap(col(i),col(j)),lab=i===0?'Rater '+j+' vs standard':'Rater '+i+' vs Rater '+j;if(i===0)worst=Math.min(worst,k.k);tb+='<tr><td>'+lab+'</td><td class="num">'+fmt(k.po*100,0)+'%</td><td class="num">'+fmt(k.k,3)+'</td><td>'+(k.k>=0.9?'excellent':k.k>=0.7?'acceptable':'improve')+'</td></tr>';}
+  tb+='</tbody></table></div>';
+  var cls=worst>=0.9?'good':worst>=0.7?'warn':'bad';
+  $('#out').innerHTML='<div class="kpis">'+kpi('Items',rows.length)+kpi('All raters match standard',fmt(allOk/rows.length*100,0)+'%',allOk/rows.length>=0.9?'good':'warn')+kpi('Lowest kappa vs standard',fmt(worst,2),cls)+'</div>'+tb+'<div class="verdict '+cls+'">'+(cls==='good'?'The attribute measurement system is excellent.':cls==='warn'?'Acceptable but improvable: review disagreements and tighten the operational definition of a defect.':'Not acceptable. Raters cannot reliably tell good from bad. Improve the definition, add boundary samples and retrain, then repeat.')+'</div><p class="note">A good study uses 30 to 50 items with a balance of good, bad and borderline items, and each rater should judge them blind and at least twice for repeatability.</p>';
+}
+setupTool({},update,function(){$('#aa_data').value=EX;});
+
+</script>
+</body>
+</html>

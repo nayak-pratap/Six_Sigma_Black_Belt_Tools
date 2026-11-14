@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two-Level Factorial DOE Analysis | Black Belt Toolkit</title>
+<meta name="description" content="Analyse a 2², 2³ or 2⁴ full factorial: effects, interactions, ANOVA with replicates, Pareto of effects, model equation and best settings.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Improve phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Two-Level Factorial DOE Analysis</h1><p class="lead">Analyse a 2², 2³ or 2⁴ full factorial: effects, interactions, ANOVA with replicates, Pareto of effects, model equation and best settings.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field"><label for="do_k">Number of factors</label><select id="do_k"><option value="2">2 factors (4 runs)</option><option value="3">3 factors (8 runs)</option><option value="4">4 factors (16 runs)</option></select></div><div class="field"><label for="do_names">Factor names, comma separated</label><input id="do_names" type="text"></div><div class="field"><label for="do_goal">Goal</label><select id="do_goal"><option value="max">Maximise the response</option><option value="min">Minimise the response</option></select></div><div class="field"><label for="do_a">Significance level α</label><select id="do_a"><option value="0.10">0.10</option><option value="0.05">0.05</option><option value="0.01">0.01</option></select></div><div class="field" style="grid-column:1/-1"><label for="do_y">Responses in standard (Yates) order: (1), a, b, ab, c, ac, bc, abc … . For replicates, list the full set again.</label><textarea id="do_y" rows="4"></textarea></div></div><p class="note" style="margin-top:12px">Standard order means factor A alternates every run, B every two runs, C every four. Effect = (average at high) − (average at low). With replicates the pure-error variance gives F-tests for every term. Without replicates, Lenth’s pseudo standard error flags the large effects. Example: edge strength (N) from a 2³ study of sintering temperature, press pressure and hold time, two replicates.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+function mk(){var r=mulberry(14),X=fullFactorial(3),L=[];for(var rep=0;rep<2;rep++)X.forEach(function(x){L.push((60+5.5*x[0]+3.2*x[1]+0.4*x[2]+2.6*x[0]*x[1]-0.5*x[1]*x[2]+gaussR(r)*1.1).toFixed(1));});return L.join(' ');}
+var EX=mk();
+function termName(t,nm){return t.map(function(j){return nm[j];}).join('×');}
+function update(){
+  var k=parseInt($('#do_k').value,10),nm=$('#do_names').value.split(',').map(function(s){return s.trim();}).filter(Boolean),a=parseFloat($('#do_a').value),y=parseNums($('#do_y').value),runs=Math.pow(2,k);
+  while(nm.length<k)nm.push(String.fromCharCode(65+nm.length));nm=nm.slice(0,k);
+  if(y.length<runs||y.length%runs!==0){$('#out').innerHTML='<p class="note">For '+k+' factors give '+runs+' responses per replicate (multiples of '+runs+'). You gave '+y.length+'.</p>';return;}
+  var reps=y.length/runs,X=fullFactorial(k),XN=[],yN=[];for(var r=0;r<reps;r++)for(var i=0;i<runs;i++){XN.push(X[i]);yN.push(y[r*runs+i]);}
+  var terms=[];for(var m=1;m<Math.pow(2,k);m++){var t=[];for(var j=0;j<k;j++)if((m>>j)&1)t.push(j);terms.push(t);}terms.sort(function(a,b){return a.length-b.length;});
+  var N=yN.length,eff=terms.map(function(t){return effectOf(XN,yN,t);}),ss=eff.map(function(e){return N*e*e/4;}),h='',flag=[],pv=[];
+  if(reps>1){var sse=0,cm={};for(var q=0;q<N;q++){var key=XN[q].join(',');(cm[key]=cm[key]||[]).push(yN[q]);}Object.keys(cm).forEach(function(key){var c=cm[key],mm=mean(c);c.forEach(function(v){sse+=Math.pow(v-mm,2);});});var dfe=runs*(reps-1),mse=sse/dfe;pv=ss.map(function(s){return fUpperP(s/mse,1,dfe);});flag=pv.map(function(p){return p<a;});h='<div class="kpis">'+kpi('Runs',N+' ('+reps+' reps)')+kpi('Pure error σ',fmt(Math.sqrt(mse),3))+kpi('Error df',dfe)+kpi('Significant terms',flag.filter(Boolean).length,'good')+'</div>';}
+  else{var ab=eff.map(Math.abs).sort(function(x,y2){return x-y2;}),s0=1.5*quant(ab,.5),keep=ab.filter(function(v){return v<2.5*s0;}),pse=1.5*quant(keep.length?keep:ab,.5),tcrit=eff.length<=3?3.2:eff.length<=7?2.3:2.2;flag=eff.map(function(e){return pse>0&&Math.abs(e)/pse>tcrit;});h='<div class="kpis">'+kpi('Runs',N+' (no replicates)')+kpi('Lenth PSE',fmt(pse,3))+kpi('Active terms',flag.filter(Boolean).length,'good')+'</div><p class="note">Without replication there is no true error estimate; terms are flagged when |effect| ÷ PSE exceeds about '+tcrit+'. Confirm with a replicate or confirmation runs.</p>';}
+  var mx=Math.max.apply(null,eff.map(Math.abs))||1,ord=eff.map(function(e,i){return i;}).sort(function(i,j){return Math.abs(eff[j])-Math.abs(eff[i]);});
+  h+='<div class="meters" style="display:flex;flex-direction:column;gap:6px">'+ord.map(function(i){return '<div class="prow"><span>'+esc(termName(terms[i],nm))+'</span><div class="bar"><i style="width:'+Math.round(Math.abs(eff[i])/mx*100)+'%;'+(flag[i]?'':'background:var(--ink-2);opacity:.5')+'"></i></div><span class="n">'+(eff[i]>=0?'+':'')+fmt(eff[i],2)+(flag[i]?' ●':'')+'</span></div>';}).join('')+'</div><p class="note">● marks active terms (largest first). Bars show the size of each effect.</p>';
+  h+='<div class="tbl-wrap"><table><thead><tr><th>Term</th><th class="num">Effect</th><th class="num">Coefficient</th><th class="num">% of total SS</th>'+(reps>1?'<th class="num">p</th>':'')+'</tr></thead><tbody>'+ord.map(function(i){return '<tr><td>'+esc(termName(terms[i],nm))+'</td><td class="num">'+fmt(eff[i],3)+'</td><td class="num">'+fmt(eff[i]/2,3)+'</td><td class="num">'+fmt(ss[i]/ss.reduce(function(x,y2){return x+y2;},0)*100,1)+'%</td>'+(reps>1?'<td class="num">'+pstr(pv[i])+'</td>':'')+'</tr>';}).join('')+'</tbody></table></div>';
+  var gmn=mean(yN),goal=$('#do_goal').value,best=[],setting=[];for(var j2=0;j2<k;j2++){var ef=effectOf(XN,yN,[j2]);setting.push((goal==='max')===(ef>=0)?1:-1);}
+  var pred=gmn;terms.forEach(function(t,i){if(flag[i]){var c=1;t.forEach(function(j){c*=setting[j];});pred+=eff[i]/2*c;}});
+  h+='<div class="verdict good"><b>Equation (active terms, coded −1/+1):</b> ŷ = '+fmt(gmn,2)+terms.map(function(t,i){return flag[i]?' '+(eff[i]>=0?'+':'−')+' '+fmt(Math.abs(eff[i]/2),2)+'·'+termName(t,nm):'';}).join('')+'<br><b>Suggested settings (from main effects):</b> '+nm.map(function(n,j){return esc(n)+' = '+(setting[j]>0?'high':'low');}).join(', ')+'. Predicted response about '+fmt(pred,2)+'. Check interactions: a strong interaction can override the main-effect direction, so confirm with a run at these settings.</div>';
+  $('#out').innerHTML=h;
+}
+setupTool({},update,function(){$('#do_k').value='3';$('#do_names').value='Temp, Pressure, Hold';$('#do_goal').value='max';$('#do_a').value='0.05';$('#do_y').value=EX;});
+
+</script>
+</body>
+</html>

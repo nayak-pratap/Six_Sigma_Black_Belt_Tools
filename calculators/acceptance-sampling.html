@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acceptance Sampling and OC Curve | Black Belt Toolkit</title>
+<meta name="description" content="Evaluate a single sampling plan (n, c): operating characteristic curve, producer’s and consumer’s risk, and average outgoing quality.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Control phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Acceptance Sampling and OC Curve</h1><p class="lead">Evaluate a single sampling plan (n, c): operating characteristic curve, producer’s and consumer’s risk, and average outgoing quality.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field"><label for="as_n">Sample size n</label><input id="as_n" type="number" step="any" min="1" step="1"></div><div class="field"><label for="as_c">Accept number c</label><input id="as_c" type="number" step="any" min="0" step="1"></div><div class="field"><label for="as_aql">AQL (acceptable quality level, fraction defective)</label><input id="as_aql" type="number" step="any" min="0" max="1" step="any"></div><div class="field"><label for="as_ltpd">LTPD / RQL (unacceptable level, fraction defective)</label><input id="as_ltpd" type="number" step="any" min="0" max="1"></div><div class="field"><label for="as_lot">Lot size (for rectifying inspection, 0 = ignore)</label><input id="as_lot" type="number" step="any" min="0"></div></div><p class="note" style="margin-top:12px">Accept the lot when the sample has c or fewer defectives. Pa(p) = P(X ≤ c) with X binomial(n, p). Producer’s risk α = 1 − Pa(AQL): good lots rejected. Consumer’s risk β = Pa(LTPD): bad lots accepted. AOQ(p) = p·Pa(p)·(N − n) ÷ N with rejected lots 100% screened. Example: n = 120, c = 3, AQL 1%, LTPD 6%.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+function update(){
+  var n=Math.round(val('as_n')),c=Math.round(val('as_c')),aql=val('as_aql'),lt=val('as_ltpd'),N=val('as_lot')||0;
+  if(!(n>=1&&c>=0&&c<n&&aql>0&&lt>aql&&lt<1)){$('#out').innerHTML='<p class="note">Enter n of 1 or more, c below n, and 0 < AQL < LTPD < 1.</p>';return;}
+  var pa=function(p){return binomCdf(n,c,p);},al=1-pa(aql),be=pa(lt),W=520,H=230,pm=Math.min(1,Math.max(lt*2,0.1)),f=frame(W,H,0,pm,0,1,{xl:'Lot fraction defective',yl:'Probability of acceptance'}),pts=[],ao=[],aoql=0,N2=N>n?N:0;
+  for(var i=0;i<=100;i++){var p=pm*i/100,a=pa(p);pts.push(f.xs(p)+','+f.ys(a));var q=p*a*(N2?(N2-n)/N2:1);ao.push(q);if(q>aoql)aoql=q;}
+  var s=f.base+'<polyline points="'+pts.join(' ')+'" style="fill:none;stroke:var(--accent);stroke-width:2.5"/>';
+  [[aql,1-al,'AQL','good'],[lt,be,'LTPD','bad']].forEach(function(m){s+='<circle cx="'+f.xs(m[0])+'" cy="'+f.ys(m[1])+'" r="5" style="fill:var(--'+m[3]+')"/><text x="'+(f.xs(m[0])+8)+'" y="'+(f.ys(m[1])-6)+'" '+f.t+'>'+m[2]+'</text>';});
+  var rows=[0.005,aql,0.02,0.03,0.05,lt,0.1].filter(function(p,i,a){return a.indexOf(p)===i&&p<1;}).sort(function(a,b){return a-b;});
+  $('#out').innerHTML='<div class="kpis">'+kpi('Producer’s risk α',fmt(al*100,1)+'%',al<=0.05?'good':'warn')+kpi('Consumer’s risk β',fmt(be*100,1)+'%',be<=0.10?'good':'warn')+kpi('Pa at AQL',fmt((1-al)*100,1)+'%')+kpi('Pa at LTPD',fmt(be*100,1)+'%')+(N2?kpi('AOQL (worst outgoing)',fmt(aoql*100,2)+'%'):'')+'</div>'+svgWrap(W,H,s,'Operating characteristic curve')+
+  '<div class="tbl-wrap"><table><thead><tr><th class="num">Lot % defective</th><th class="num">P(accept)</th></tr></thead><tbody>'+rows.map(function(p){return '<tr><td class="num">'+fmt(p*100,2)+'%</td><td class="num">'+fmt(pa(p)*100,1)+'%</td></tr>';}).join('')+'</tbody></table></div><div class="verdict '+(al<=0.05&&be<=0.1?'good':'warn')+'">'+(al<=0.05&&be<=0.1?'The plan meets the usual 5% producer and 10% consumer risk targets.':'The plan does not meet the usual 5% (producer) and 10% (consumer) risks. Increase n and adjust c to steepen the curve.')+'</div><p class="note">Sampling inspects quality in; it does not build it in. Use it for incoming lots and destructive tests, and move to process control where you can.</p>';
+}
+setupTool({as_n:120,as_c:3,as_aql:0.01,as_ltpd:0.06,as_lot:2000},update);
+
+</script>
+</body>
+</html>

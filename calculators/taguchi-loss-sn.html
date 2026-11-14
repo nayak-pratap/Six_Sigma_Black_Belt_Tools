@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taguchi Loss Function and S/N Ratio | Black Belt Toolkit</title>
+<meta name="description" content="Put a cost on being off target and variable: quadratic loss per part, and signal-to-noise ratio to compare settings.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="../index.html"><i></i>Black Belt Toolkit</a><nav class="nav" aria-label="Sections"><a href="../index.html#calculators">Calculators</a><a href="../index.html#tools">Tools</a></nav><button class="icon-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button></div></header>
+<div class="wrap"><main>
+<section style="padding-top:36px;display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Calculator · Improve phase</span><h1 style="font-size:clamp(1.8rem,4vw,2.6rem)">Taguchi Loss Function and S/N Ratio</h1><p class="lead">Put a cost on being off target and variable: quadratic loss per part, and signal-to-noise ratio to compare settings.</p></section>
+<section class="tool-page" style="margin-top:28px">
+<div class="calc" id="tool"><div><div class="fields"><div class="field"><label for="tg_t">Target value T</label><input id="tg_t" type="number" step="any"></div><div class="field"><label for="tg_d">Customer tolerance Δ (±)</label><input id="tg_d" type="number" step="any"></div><div class="field"><label for="tg_a">Cost when a part sits at the tolerance limit</label><input id="tg_a" type="number" step="any"></div><div class="field"><label for="tg_type">S/N type</label><select id="tg_type"><option value="nom">Nominal is best</option><option value="sml">Smaller is better</option><option value="lrg">Larger is better</option></select></div><div class="field" style="grid-column:1/-1"><label for="tg_data">Measured values</label><textarea id="tg_data" rows="4"></textarea></div></div><p class="note" style="margin-top:12px">Loss per part L = k(y − T)², with k = A ÷ Δ². Average loss = k(σ² + (mean − T)²): both spread and offset cost money, even inside tolerance. S/N (nominal): 10·log10(mean² ÷ s²); smaller-is-better: −10·log10(mean of y²); larger-is-better: −10·log10(mean of 1/y²). Higher S/N is better; use it to pick settings that are robust to noise. Example: a bore of 10.00 mm ± 0.10 where scrapping a part costs 25.</p></div><div class="out" id="out"></div></div>
+<div class="acts" style="margin-top:20px"><button class="btn" id="resetBtn" type="button">Reset to example values</button></div>
+</section>
+<div class="pagefoot"><a href="../index.html">All calculators and tools</a><span>Worked examples are illustrative. Check your own data, standards and customer requirements before acting on a result.</span></div>
+</main></div>
+<script src="../assets/lib.js"></script>
+<script>
+
+var EX='10.02 9.97 10.05 10.01 9.94 10.06 10.03 9.98 10.04 10.00 9.96 10.07';
+function update(){
+  var T=val('tg_t'),D=val('tg_d'),A=val('tg_a'),ty=$('#tg_type').value,x=parseNums($('#tg_data').value);
+  if(!(D>0&&A>0&&x.length>=3&&T===T)){$('#out').innerHTML='<p class="note">Enter a target, a positive tolerance and cost, and at least 3 values.</p>';return;}
+  var k=A/(D*D),m=mean(x),s=sdev(x),avg=k*(s*s+Math.pow(m-T,2)),inTol=x.filter(function(v){return Math.abs(v-T)<=D;}).length,sn;
+  if(ty==='nom'){if(!(s>0&&m!==0)){$('#out').innerHTML='<p class="note">Nominal-is-best needs non-zero variation and a non-zero mean.</p>';return;}sn=10*Math.log(m*m/(s*s))/Math.LN10;}else if(ty==='sml')sn=-10*Math.log(mean(x.map(function(v){return v*v;})))/Math.LN10;else{if(x.some(function(v){return v<=0;})){$('#out').innerHTML='<p class="note">Larger-is-better needs positive values.</p>';return;}sn=-10*Math.log(mean(x.map(function(v){return 1/(v*v);})))/Math.LN10;}
+  var shareOff=k*Math.pow(m-T,2)/avg;
+  $('#out').innerHTML='<div class="kpis">'+kpi('Average loss per part',fmt(avg,3))+kpi('Parts inside tolerance',inTol+' of '+x.length,inTol===x.length?'good':'warn')+kpi('S/N ratio (dB)',fmt(sn,2))+kpi('k = A ÷ Δ²',fmt(k,2))+'</div><div class="verdict '+(shareOff>0.5?'warn':'good')+'">'+(inTol===x.length?'Every part is inside the tolerance, yet the average loss is '+fmt(avg,2)+' per part: Taguchi’s point is that cost rises smoothly as parts move from the target, not suddenly at the limit.':'Some parts are outside the tolerance.')+' '+fmt(shareOff*100,0)+'% of the loss is from the mean being off target (fixable by adjusting), '+fmt((1-shareOff)*100,0)+'% from variation (needs improvement).</div><p class="note">Compare settings by S/N ratio: a gain of 3 dB means the variation is cut by about 30%.</p>';
+}
+setupTool({tg_t:10,tg_d:0.1,tg_a:25,tg_type:'nom'},update,function(){$('#tg_t').value=10;$('#tg_d').value=0.1;$('#tg_a').value=25;$('#tg_type').value='nom';$('#tg_data').value=EX;});
+
+</script>
+</body>
+</html>
