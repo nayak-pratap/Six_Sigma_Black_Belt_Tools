@@ -1,0 +1,1181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DMAIC Project Workbook | Six Sigma Black Belt Toolkit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="One carbide-insert project carried from charter to closure on a single dataset: every stage computes from the stage before, with gates that block when the evidence is not there.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+html{-webkit-text-size-adjust:100%}
+
+/* A project traveller card: the document that rides with the job from first
+   gate to last. Same inspection-room palette as the framework pages. */
+:root{
+  --bg:#F1F4F7; --surface:#FFFFFF; --surface-2:#E8EDF3; --ink:#0F1A25; --ink-2:#475667; --line:#CBD4DE;
+  --accent:#0F5BC4; --accent-ink:#FFFFFF; --accent-soft:#DDE9FA;
+  --good:#1B7F46; --good-soft:#DCF1E4; --warn:#8F6200; --warn-soft:#F7ECCF; --bad:#BF3B2B; --bad-soft:#F9DEDA;
+  --font-display:'Space Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1319; --surface:#141C25; --surface-2:#1B2531; --ink:#E7EDF3; --ink-2:#9FADBB; --line:#2A3644;
+    --accent:#6DAEF0; --accent-ink:#08121C; --accent-soft:#16283D;
+    --good:#4CC380; --good-soft:#123223; --warn:#E0B04A; --warn-soft:#33290F; --bad:#EE7B6B; --bad-soft:#3A1A16;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1319; --surface:#141C25; --surface-2:#1B2531; --ink:#E7EDF3; --ink-2:#9FADBB; --line:#2A3644;
+  --accent:#6DAEF0; --accent-ink:#08121C; --accent-soft:#16283D;
+  --good:#4CC380; --good-soft:#123223; --warn:#E0B04A; --warn-soft:#33290F; --bad:#EE7B6B; --bad-soft:#3A1A16;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--surface);z-index:40}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.2;margin:0;text-wrap:balance}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);letter-spacing:-.02em}
+h2{font-size:clamp(1.3rem,2.6vw,1.8rem);letter-spacing:-.01em}
+h3{font-size:1.05rem}
+h4{font-size:.95rem}
+p{margin:0}
+a{color:var(--accent)}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.muted{color:var(--ink-2)}
+.n{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1240px;margin:0 auto;padding:10px max(16px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:14px}
+.brand{font-family:var(--font-display);font-weight:700;font-size:.98rem;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand i{width:9px;height:9px;border-radius:50%;background:var(--accent);display:block}
+.back-link{font-family:var(--font-mono);font-size:.76rem;color:var(--ink-2);text-decoration:none;white-space:nowrap}
+.back-link:hover{color:var(--accent)}
+@media (max-width:760px){.back-link{display:none}}
+@media (max-width:540px){.hide-s{display:none}.top-in{gap:9px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}.btn.small{padding:5px 8px}}
+.spacer{flex:1}
+.btn{font-family:var(--font-body);font-size:.88rem;font-weight:500;padding:8px 14px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{opacity:.9;color:var(--accent-ink)}
+.btn.small{font-size:.8rem;padding:5px 10px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* live state strip */
+.hero{background:var(--surface-2);border-bottom:1px solid var(--line);position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--headerH,48px));z-index:25}
+.hero-in{max-width:1240px;margin:0 auto;padding:10px max(16px,env(safe-area-inset-left,0px)) 11px;display:flex;flex-direction:column;gap:8px}
+.hero-tag{display:flex;align-items:baseline;gap:4px 14px;flex-wrap:wrap}
+.hero-title{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.dash-dot{width:7px;height:7px;border-radius:50%;background:var(--good);flex:0 0 auto;box-shadow:0 0 0 3px var(--good-soft)}
+.hero-title b{font-family:var(--font-display);font-size:.88rem;letter-spacing:.01em;white-space:nowrap}
+.hero-sub{font-size:.77rem;color:var(--ink-2);line-height:1.45;flex:1 1 260px;min-width:0}
+.hero-sub b{font-family:var(--font-body);font-size:inherit;color:var(--ink);font-weight:600}
+.d-short{display:none}
+.sv-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin}
+@media (max-width:820px){
+  .hero-sub{font-size:.73rem;flex-basis:100%}
+  .hero-in{gap:6px;padding-top:8px}
+  .d-long{display:none}.d-short{display:inline}
+}
+.sv{flex:0 0 auto;display:flex;flex-direction:column;gap:1px;padding:4px 12px;border-right:1px solid var(--line);min-width:0}
+.sv:last-child{border-right:0}
+.sv b{font-family:var(--font-mono);font-size:.92rem;font-weight:500;white-space:nowrap}
+.sv span{font-size:.68rem;color:var(--ink-2);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+.sv.g b{color:var(--good)} .sv.w b{color:var(--warn)} .sv.b b{color:var(--bad)}
+
+/* layout */
+.cols{display:grid;grid-template-columns:232px minmax(0,1fr);gap:28px;padding:24px 0 60px;align-items:start}
+@media (min-width:901px){.cols{min-height:calc(100vh - var(--stickyH,118px) + 60px)}}
+@media (max-width:900px){.cols{grid-template-columns:1fr;gap:14px}}
+.rail{position:sticky;top:calc(var(--stickyH,118px) + 12px);max-height:calc(100vh - var(--stickyH,118px) - 24px);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden}
+.rail-head{padding:11px 13px;border-bottom:1px solid var(--line);background:var(--surface-2);display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
+.rail-head b{font-family:var(--font-display);font-size:.9rem}
+.rail-head p{font-size:.77rem;color:var(--ink-2);line-height:1.4}
+.legend{display:flex;flex-direction:column;gap:5px;font-size:.73rem;color:var(--ink-2)}
+.legend span{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.legend i{flex:0 0 auto;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-mono);font-size:.58rem;font-style:normal;color:#fff}
+.legend .m-ok{background:var(--good)} .legend .m-warn{background:var(--warn)} .legend .m-stop{background:var(--bad)}
+.rail-list{display:flex;flex-direction:column;gap:2px;padding:6px;overflow-y:auto;min-height:0}
+@media (max-width:900px){
+  .rail{position:static}
+  .rail-head{gap:6px}
+  .legend{flex-direction:row;flex-wrap:wrap;gap:5px 15px}
+  .rail-list{flex-direction:row;overflow-x:auto;gap:6px;padding:8px 6px 10px}
+}
+.rl{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:var(--r);border:1px solid transparent;background:none;cursor:pointer;text-align:left;font-family:var(--font-body);font-size:.84rem;color:var(--ink-2);width:100%;line-height:1.3}
+@media (max-width:900px){.rl{width:auto;flex:0 0 auto;white-space:nowrap}}
+.rl:hover{background:var(--surface-2)}
+.rl[aria-current=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:500}
+.rl .dot{flex:0 0 auto;width:19px;height:19px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-family:var(--font-mono);font-size:.64rem;color:var(--ink-2);margin-top:1px}
+.rl.done .dot{background:var(--good);border-color:var(--good);color:#fff}
+.rl.warn .dot{background:var(--warn);border-color:var(--warn);color:#fff}
+.rl.blocked .dot{background:var(--bad);border-color:var(--bad);color:#fff}
+.rl.locked{opacity:.5}
+.rl small{display:block;font-size:.7rem;color:var(--ink-2);font-weight:400}
+@media (max-width:900px){.rl small{display:none}}
+
+/* stage body */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(18px,3vw,30px);display:flex;flex-direction:column;gap:18px;min-width:0}
+.lead{color:var(--ink-2);font-size:1rem;max-width:66ch}
+.flow{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 14px;border-radius:0 var(--r) var(--r) 0;font-size:.89rem;display:flex;flex-direction:column;gap:5px}
+.flow.out{border-left-color:var(--good);background:var(--good-soft)}
+.flow b{font-family:var(--font-mono);font-size:.73rem;letter-spacing:.09em;text-transform:uppercase}
+.flow ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.flow code{font-family:var(--font-mono);font-size:.85em;background:var(--surface);padding:1px 4px;border-radius:3px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,124px),1fr));gap:9px}
+.kpi{background:var(--surface-2);border-radius:var(--r);padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpi b{font-family:var(--font-mono);font-size:1.12rem;font-weight:500;word-break:break-word}
+.kpi span{font-size:.72rem;color:var(--ink-2)}
+.kpi.good b{color:var(--good)} .kpi.warn b{color:var(--warn)} .kpi.bad b{color:var(--bad)}
+
+.verdict{border-radius:var(--r);padding:12px 14px;font-size:.92rem;border:1px solid var(--line);background:var(--surface-2)}
+.verdict.good{background:var(--good-soft);border-color:transparent}
+.verdict.warn{background:var(--warn-soft);border-color:transparent}
+.verdict.bad{background:var(--bad-soft);border-color:transparent}
+.verdict b{font-weight:600}
+
+.gate{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--r);font-size:.9rem;font-weight:500}
+.gate.pass{background:var(--good-soft);color:var(--good)}
+.gate.hold{background:var(--warn-soft);color:var(--warn)}
+.gate.stop{background:var(--bad-soft);color:var(--bad)}
+.gate .lbl{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:3px;background:rgba(0,0,0,.08)}
+
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{background:var(--surface-2);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2)}
+tbody tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+tr.hi td{background:var(--accent-soft)}
+.sig{color:var(--good);font-weight:600}
+.insig{color:var(--ink-2)}
+
+figure{margin:0;display:flex;flex-direction:column;gap:6px}
+figure svg{display:block;width:100%;height:auto;background:var(--surface-2);border-radius:var(--r)}
+figcaption{font-size:.78rem;color:var(--ink-2)}
+.note{font-size:.85rem;color:var(--ink-2)}
+.cardrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
+.card{background:var(--surface-2);border-radius:var(--r);padding:13px 15px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.card h4{font-family:var(--font-display)}
+.card p{font-size:.86rem;color:var(--ink-2)}
+.navrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding-top:4px;border-top:1px solid var(--line)}
+
+/* what-if drawer */
+.drawer{position:fixed;right:0;top:calc(env(safe-area-inset-top,0px) + 118px);bottom:auto;z-index:50;width:min(380px,100%);max-height:calc(100vh - env(safe-area-inset-top,0px) - 130px);background:var(--surface);border:1px solid var(--line);border-right:0;border-radius:var(--r) 0 0 var(--r);box-shadow:-6px 4px 30px rgba(0,0,0,.16);display:flex;flex-direction:column;transform:translateX(102%);transition:transform .22s ease}
+.drawer[data-open=true]{transform:translateX(0)}
+.drawer-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.drawer-b{overflow-y:auto;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:15px}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:.82rem;font-weight:500;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.fld label .v{font-family:var(--font-mono);color:var(--accent);font-size:.85rem}
+.fld input[type=range]{width:100%;accent-color:var(--accent)}
+.fld .hint{font-size:.74rem;color:var(--ink-2)}
+.rail-head{display:flex;flex-direction:column;gap:2px;padding:2px 10px 8px}
+@media (max-width:900px){.rail-head{display:none}}
+.rail-head b{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:500}
+.rail-head span{font-size:.72rem;color:var(--ink-2);line-height:1.45}
+.kitbox{border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;display:flex;flex-direction:column;gap:8px;background:var(--surface-2)}
+.kitbox b{font-family:var(--font-display);font-size:.92rem}
+.kitbox p{font-size:.8rem;color:var(--ink-2)}
+.kitlinks{display:flex;flex-wrap:wrap;gap:7px}
+.kitlinks a{font-size:.83rem;text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:100px;padding:5px 13px;color:var(--accent);white-space:nowrap}
+.kitlinks a:hover{border-color:var(--accent);background:var(--accent-soft)}
+footer{border-top:1px solid var(--line);padding:26px 0 calc(34px + env(safe-area-inset-bottom,0px));font-size:.83rem;color:var(--ink-2);display:flex;flex-direction:column;gap:9px}
+footer ul{margin:0;padding-left:18px}
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="#top"><i></i>DMAIC <span class="hide-s">Project </span>Workbook</a>
+    <a class="back-link" href="../index.html">&larr; All calculators and tools</a>
+    <div class="spacer"></div>
+    <button class="btn small primary" id="whatIfBtn" type="button">What-if <span aria-hidden="true">&#9881;</span></button>
+    <button class="btn small" id="themeBtn" type="button">Theme</button>
+  </div>
+</header>
+<section class="hero" aria-labelledby="heroTag">
+  <div class="hero-in">
+    <div class="hero-tag">
+      <span class="hero-title"><span class="dash-dot" aria-hidden="true"></span><b id="heroTag">Live project result</b></span>
+      <span class="hero-sub"><span class="d-long">One carbide-insert project, charter to closure. Every figure below is computed from the project data &#8212; change any input under <b>What-if</b> and they all move.</span><span class="d-short">One project, charter to closure. Change an input under <b>What-if</b> and every figure moves.</span></span>
+    </div>
+    <div class="sv-row" id="strip"></div>
+  </div>
+</section>
+<div class="wrap" id="top">
+  <div class="cols">
+    <nav class="rail" id="rail" aria-label="Project stages"></nav>
+    <main class="stage" id="stage" tabindex="-1"></main>
+  </div>
+  <footer>
+    <div><b>What this is.</b> One simulated project, carried from charter to closure on a single dataset. Every stage computes from the stage before it, so changing something early changes everything after it. The process model behind the data is fixed and deterministic: the same inputs always give the same numbers.</div>
+    <div><b>The data are invented</b> for teaching, generated from a known cause-and-effect model of a carbide insert sintering process. No real plant data are used. The statistics are real: the same routines as the Black Belt toolkit, checked against published values.</div>
+    <div>Not affiliated with or endorsed by ASQ, IASSC or any certifying body.</div>
+  </footer>
+</div>
+<aside class="drawer" id="drawer" data-open="false" aria-label="What-if controls">
+  <div class="drawer-h"><b style="font-family:var(--font-display)">What-if</b><span class="note" style="flex:1">Change an input, watch every stage after it move.</span><button class="btn small" id="drawerClose" type="button">Close</button></div>
+  <div class="drawer-b" id="drawerBody"></div>
+</aside>
+
+<script>
+/* ===================================================================
+   ONE PROCESS MODEL. Every dataset in this workbook is generated from
+   it, so the numbers agree from charter to closure.
+
+   Product : sintered carbide insert
+   Lot     : one sinter batch; 5 inserts measured per lot
+   Y       : edge strength index (ESI). Below LSL the edge chips in
+             finishing and the insert is scrapped.
+   Truth   :
+     ESI = B0 + bT*(T-1425) + bM*(M-0.31) + bH*(H-45)
+           + bTM*(T-1425)*(M-0.31) + lot + part + gauge
+   The bTM term is the robustness effect: at higher sintering
+   temperature the process is far less sensitive to powder moisture.
+   Nothing in the Analyze stage can see it; only the DOE can.
+=================================================================== */
+var TRUTH = {
+  B0: 112, bT: 0.33, bM: -110, bH: 0.02, bTM: 4.0,
+  T0: 1425, M0: 0.31, H0: 45,
+  sdLot: 1.2,      // lot-to-lot cause not explained by T, M, H
+  sdPart: 5.23,    // true insert-to-insert inside a lot
+  LSL: 100
+};
+/* operating windows: baseline (uncontrolled) and after improvement */
+var BASE_OP = { Tm: 1425, Tsd: 10.0, Mm: 0.31, Msd: 0.030, Hm: 45, Hsd: 6 };
+
+function rng(seed) { var a = seed >>> 0; return function () { a = (a + 0x6D2B79F5) >>> 0; var t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gauss(r) { var u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
+function esi(T, M, H) { var t = T - TRUTH.T0, m = M - TRUTH.M0; return TRUTH.B0 + TRUTH.bT * t + TRUTH.bM * m + TRUTH.bH * (H - TRUTH.H0) + TRUTH.bTM * t * m; }
+/* sensitivity of ESI to T and to M at a given operating point */
+function dT(M) { return TRUTH.bT + TRUTH.bTM * (M - TRUTH.M0); }
+function dM(T) { return TRUTH.bM + TRUTH.bTM * (T - TRUTH.T0); }
+
+/* ---- lots of production: returns lot records with true + measured ---- */
+function makeLots(n, op, seed, sdGauge) {
+  var r = rng(seed), out = [];
+  for (var i = 0; i < n; i++) {
+    var T = op.Tm + gauss(r) * op.Tsd, M = Math.max(0.05, op.Mm + gauss(r) * op.Msd), H = op.Hm + gauss(r) * op.Hsd;
+    /* recorded but inert: press density, operator, shift. Real candidates that Analyze must reject. */
+    var D = 6.05 + gauss(r) * 0.08, OPR = 1 + (i % 3), SH = 'ABC'.charAt(Math.floor(i / 5) % 3);
+    var base = esi(T, M, H) + gauss(r) * TRUTH.sdLot, parts = [], meas = [];
+    for (var j = 0; j < 5; j++) { var tv = base + gauss(r) * TRUTH.sdPart; parts.push(tv); meas.push(tv + gauss(r) * sdGauge); }
+    out.push({ i: i + 1, T: T, M: M, H: H, D: D, opr: OPR, sh: SH, parts: parts, meas: meas });
+  }
+  return out;
+}
+/* ---- gauge study: 10 parts x 3 operators x 3 trials ---- */
+function makeGage(seed, sdGauge, sdOper) {
+  var r = rng(seed), parts = [], rows = [];
+  for (var p = 0; p < 10; p++) parts.push(112 + gauss(r) * 7.0);
+  var ob = [0, 0, 0].map(function () { return gauss(r) * sdOper; });
+  for (var p2 = 0; p2 < 10; p2++) for (var o = 0; o < 3; o++) { var tr = []; for (var k = 0; k < 3; k++) tr.push(parts[p2] + ob[o] + gauss(r) * sdGauge); rows.push({ p: p2 + 1, o: o + 1, v: tr }); }
+  return rows;
+}
+/* ---- DOE: 2^3 full factorial, 2 replicates, 5 inserts per run ---- */
+var DOE_LV = { T: [1415, 1440], M: [0.26, 0.34], H: [30, 60] };
+function makeDOE(seed, sdGauge, perRun) {
+  var r = rng(seed), runs = [], nper = perRun || 8;
+  for (var rep = 0; rep < 2; rep++) for (var c = 0; c < 8; c++) {
+    var x = [(c & 1) ? 1 : -1, (c & 2) ? 1 : -1, (c & 4) ? 1 : -1];
+    var T = DOE_LV.T[x[0] > 0 ? 1 : 0], M = DOE_LV.M[x[1] > 0 ? 1 : 0], H = DOE_LV.H[x[2] > 0 ? 1 : 0];
+    var base = esi(T, M, H) + gauss(r) * TRUTH.sdLot, s = 0;
+    for (var j = 0; j < nper; j++) s += base + gauss(r) * TRUTH.sdPart + gauss(r) * sdGauge;
+    runs.push({ rep: rep + 1, std: c + 1, x: x, T: T, M: M, H: H, n: nper, y: s / nper });
+  }
+  return runs;
+}
+
+/* ---------- statistics shared by every stage ---------- */
+function mean(a) { return a.reduce(function (s, v) { return s + v; }, 0) / a.length; }
+function sdev(a) { var m = mean(a); return Math.sqrt(a.reduce(function (s, v) { return s + (v - m) * (v - m); }, 0) / (a.length - 1)); }
+function gammaln(x) { var c = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5], y = x, t = x + 5.5, s = 1.000000000190015; t -= (x + 0.5) * Math.log(t); for (var j = 0; j < 6; j++) s += c[j] / ++y; return -t + Math.log(2.5066282746310005 * s / x); }
+function normCdf(z) { var t = 1 / (1 + 0.2316419 * Math.abs(z)), d = 0.3989422804014327 * Math.exp(-z * z / 2), p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429)))); return z > 0 ? 1 - p : p; }
+function normInv(p) { if (p <= 0) return -Infinity; if (p >= 1) return Infinity; var lo = -9, hi = 9; for (var i = 0; i < 200; i++) { var m = (lo + hi) / 2; if (normCdf(m) < p) lo = m; else hi = m; } return (lo + hi) / 2; }
+function betacf(a, b, x) { var qab = a + b, qap = a + 1, qam = a - 1, c = 1, d = 1 - qab * x / qap; if (Math.abs(d) < 1e-30) d = 1e-30; d = 1 / d; var h = d; for (var m = 1; m <= 300; m++) { var m2 = 2 * m, aa = m * (b - m) * x / ((qam + m2) * (a + m2)); d = 1 + aa * d; if (Math.abs(d) < 1e-30) d = 1e-30; c = 1 + aa / c; if (Math.abs(c) < 1e-30) c = 1e-30; d = 1 / d; h *= d * c; aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2)); d = 1 + aa * d; if (Math.abs(d) < 1e-30) d = 1e-30; c = 1 + aa / c; if (Math.abs(c) < 1e-30) c = 1e-30; d = 1 / d; var del = d * c; h *= del; if (Math.abs(del - 1) < 1e-12) break; } return h; }
+function betai(a, b, x) { if (x <= 0) return 0; if (x >= 1) return 1; var bt = Math.exp(gammaln(a + b) - gammaln(a) - gammaln(b) + a * Math.log(x) + b * Math.log(1 - x)); return x < (a + 1) / (a + b + 2) ? bt * betacf(a, b, x) / a : 1 - bt * betacf(b, a, 1 - x) / b; }
+function tP2(t, df) { return betai(df / 2, 0.5, df / (df + t * t)); }
+function tInv(p, df) { var lo = 0, hi = 60; for (var i = 0; i < 200; i++) { var m = (lo + hi) / 2; if (1 - tP2(m, df) / 2 < p) lo = m; else hi = m; } return (lo + hi) / 2; }
+function fP(F, d1, d2) { if (!(F > 0)) return 1; return betai(d2 / 2, d1 / 2, d2 / (d2 + d1 * F)); }
+function pstr(p) { return p < 0.0001 ? '< 0.0001' : p.toFixed(4); }
+var D2 = { 2: 1.128, 3: 1.693, 4: 2.059, 5: 2.326, 6: 2.534, 7: 2.704, 8: 2.847, 9: 2.970, 10: 3.078 };
+var A2 = { 2: 1.880, 3: 1.023, 4: 0.729, 5: 0.577, 6: 0.483, 7: 0.419, 8: 0.373, 9: 0.337, 10: 0.308 };
+var D3 = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0.076, 8: 0.136, 9: 0.184, 10: 0.223 };
+var D4 = { 2: 3.267, 3: 2.574, 4: 2.282, 5: 2.114, 6: 2.004, 7: 1.924, 8: 1.864, 9: 1.816, 10: 1.777 };
+
+/* least squares, X without intercept */
+function matInv(A) { var n = A.length, M = A.map(function (r, i) { return r.concat(A.map(function (_, j) { return i === j ? 1 : 0; })); }); for (var c = 0; c < n; c++) { var p = c; for (var r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r; if (Math.abs(M[p][c]) < 1e-12) return null; var t = M[c]; M[c] = M[p]; M[p] = t; var d = M[c][c]; for (var j = 0; j < 2 * n; j++) M[c][j] /= d; for (var r2 = 0; r2 < n; r2++) if (r2 !== c) { var f = M[r2][c]; if (f) for (var j2 = 0; j2 < 2 * n; j2++) M[r2][j2] -= f * M[c][j2]; } } return M.map(function (r) { return r.slice(n); }); }
+function ols(Xr, y) {
+  var n = y.length, k = Xr[0].length, X = Xr.map(function (r) { return [1].concat(r); }), p = k + 1;
+  if (n <= p) return null;
+  var XX = []; for (var i = 0; i < p; i++) { XX.push([]); for (var j = 0; j < p; j++) { var s = 0; for (var q = 0; q < n; q++) s += X[q][i] * X[q][j]; XX[i].push(s); } }
+  var inv = matInv(XX); if (!inv) return null;
+  var Xy = []; for (var i2 = 0; i2 < p; i2++) { var s2 = 0; for (var q2 = 0; q2 < n; q2++) s2 += X[q2][i2] * y[q2]; Xy.push(s2); }
+  var b = inv.map(function (r) { return r.reduce(function (s, v, i3) { return s + v * Xy[i3]; }, 0); });
+  var fit = X.map(function (r) { return r.reduce(function (s, v, i4) { return s + v * b[i4]; }, 0); });
+  var my = mean(y), sse = 0, sst = 0; for (var q3 = 0; q3 < n; q3++) { sse += Math.pow(y[q3] - fit[q3], 2); sst += Math.pow(y[q3] - my, 2); }
+  var dfe = n - p, mse = sse / dfe, r2 = sst > 0 ? 1 - sse / sst : 0;
+  var se = b.map(function (_, i5) { return Math.sqrt(mse * inv[i5][i5]); });
+  var t = b.map(function (v, i6) { return v / se[i6]; });
+  var vif = []; if (k > 1) for (var j3 = 0; j3 < k; j3++) { var xj = Xr.map(function (r) { return r[j3]; }), oth = Xr.map(function (r) { return r.filter(function (_, q4) { return q4 !== j3; }); }), f2 = ols(oth, xj); vif.push(f2 && f2.r2 < 0.999999 ? 1 / (1 - f2.r2) : Infinity); }
+  return { b: b, se: se, t: t, p: t.map(function (v) { return tP2(v, dfe); }), r2: r2, adj: 1 - (1 - r2) * (n - 1) / dfe, s: Math.sqrt(mse), dfe: dfe, n: n, k: k, fit: fit, res: y.map(function (v, i7) { return v - fit[i7]; }), vif: vif, F: k > 0 ? ((sst - sse) / k) / mse : 0, pF: k > 0 ? fP(((sst - sse) / k) / mse, k, dfe) : 1 };
+}
+/* crossed gage R&R by ANOVA; rows [{p,o,v:[...]}] */
+function gageRR(rows) {
+  var P = [], O = [], cell = {}, all = [];
+  rows.forEach(function (r) { if (P.indexOf(r.p) < 0) P.push(r.p); if (O.indexOf(r.o) < 0) O.push(r.o); cell[r.p + '|' + r.o] = r.v; r.v.forEach(function (v) { all.push(v); }); });
+  var np = P.length, no = O.length, nr = rows[0].v.length, gm = mean(all), cm = {}, pm = {}, om = {};
+  P.forEach(function (p) { O.forEach(function (o) { cm[p + '|' + o] = mean(cell[p + '|' + o]); }); });
+  P.forEach(function (p) { pm[p] = mean(O.map(function (o) { return cm[p + '|' + o]; })); });
+  O.forEach(function (o) { om[o] = mean(P.map(function (p) { return cm[p + '|' + o]; })); });
+  var ssp = 0, sso = 0, ssi = 0, sse = 0;
+  P.forEach(function (p) { ssp += no * nr * Math.pow(pm[p] - gm, 2); });
+  O.forEach(function (o) { sso += np * nr * Math.pow(om[o] - gm, 2); });
+  P.forEach(function (p) { O.forEach(function (o) { ssi += nr * Math.pow(cm[p + '|' + o] - pm[p] - om[o] + gm, 2); cell[p + '|' + o].forEach(function (v) { sse += Math.pow(v - cm[p + '|' + o], 2); }); }); });
+  var dfp = np - 1, dfo = no - 1, dfi = dfp * dfo, dfe = np * no * (nr - 1);
+  var msp = ssp / dfp, mso = sso / dfo, msi = ssi / dfi, mse = sse / dfe, pI = fP(msi / mse, dfi, dfe), pooled = pI > 0.25, vr, vo, vi, vp;
+  if (pooled) { var mp = (ssi + sse) / (dfi + dfe); vr = mp; vi = 0; vo = Math.max(0, (mso - mp) / (np * nr)); vp = Math.max(0, (msp - mp) / (no * nr)); }
+  else { vr = mse; vi = Math.max(0, (msi - mse) / nr); vo = Math.max(0, (mso - msi) / (np * nr)); vp = Math.max(0, (msp - msi) / (no * nr)); }
+  var grr = vr + vo + vi, tot = grr + vp;
+  return { pooled: pooled, pI: pI, vRep: vr, vRepro: vo + vi, vGRR: grr, vPart: vp, vTot: tot, sdGRR: Math.sqrt(grr), pctSV: Math.sqrt(grr / tot) * 100, pctContrib: grr / tot * 100, ndc: Math.floor(1.41 * Math.sqrt(vp / grr)), np: np, no: no, nr: nr, ms: { msp: msp, mso: mso, msi: msi, mse: mse, dfp: dfp, dfo: dfo, dfi: dfi, dfe: dfe, ssp: ssp, sso: sso, ssi: ssi, sse: sse } };
+}
+/* capability from subgrouped data */
+function capability(groups, LSL, USL) {
+  var all = [].concat.apply([], groups), n = groups[0].length, mu = mean(all), so = sdev(all);
+  var rb = mean(groups.map(function (g) { return Math.max.apply(null, g) - Math.min.apply(null, g); })), sw = rb / D2[n];
+  function ix(s) {
+    var cp = (USL != null && LSL != null) ? (USL - LSL) / (6 * s) : null;
+    var zl = LSL != null ? (mu - LSL) / s : Infinity, zu = USL != null ? (USL - mu) / s : Infinity;
+    var cpk = Math.min(zl, zu) / 3, ppm = (LSL != null ? normCdf(-zl) : 0) + (USL != null ? normCdf(-zu) : 0);
+    return { cp: cp, cpk: cpk, zl: zl, zu: zu, ppm: ppm * 1e6, frac: ppm };
+  }
+  return { mu: mu, sWithin: sw, sOverall: so, rbar: rb, n: n, k: groups.length, within: ix(sw), overall: ix(so) };
+}
+
+/* =====================================================================
+   WORKBOOK ENGINE
+   compute(P) runs the entire project in one pass, top to bottom.
+   Each stage reads only what earlier stages produced, so the chain is
+   structural: there is no way for a stage to use a number that the
+   stage before it did not hand over.
+===================================================================== */
+var SEED = { gage: 158, base: 1176, doe: 1500, pilot: 2739, decoy: 77 };
+var LOTS_BASE = 60, LOTS_PILOT = 30, DOE_PER_RUN = 8;
+var DOE_CODE = { Tc: 1427.5, Th: 12.5, Mc: 0.30, Mh: 0.04, Hc: 45, Hh: 15 };
+
+var DEFAULTS = {
+  gaugeSd: 1.0,   // gauge repeatability, strength index units
+  operSd: 0.45,   // operator-to-operator bias spread
+  LSL: 100,       // lower spec limit on edge strength index
+  impTm: 1434,    // temperature setpoint held after improvement
+  impTsd: 5.0,    // lot-to-lot spread of temperature after improvement
+  impMm: 0.285,   // moisture target after improvement
+  impMsd: 0.020,  // lot-to-lot spread of moisture after improvement
+  volume: 840000, // inserts per year across the three lines
+  cost: 16.0,     // cost of one scrapped insert
+  target: 1.5     // charter target scrap rate, per cent
+};
+var P = {}; for (var k in DEFAULTS) P[k] = DEFAULTS[k];
+
+function fmt(v, d) { if (v === null || v === undefined || !isFinite(v)) return '—'; return (+v).toFixed(d === undefined ? 2 : d); }
+function pct(v, d) { return fmt(v * 100, d === undefined ? 2 : d) + '%'; }
+function big(v) { return Math.round(v).toLocaleString('en-US'); }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function $(s) { return document.querySelector(s); }
+
+/* ---------- the one pass ---------- */
+function compute(P) {
+  var R = { P: P };
+
+  /* --- Stage 1: measurement system --- */
+  R.msa = gageRR(makeGage(SEED.gage, P.gaugeSd, P.operSd));
+  R.msa.ok = R.msa.pctSV <= 30 && R.msa.ndc >= 5;
+  R.msa.grade = R.msa.pctSV <= 10 ? 'pass' : (R.msa.ok ? 'hold' : 'stop');
+
+  /* --- Stage 0 + 2: baseline production, measured with that same gauge --- */
+  R.base = makeLots(LOTS_BASE, BASE_OP, SEED.base, P.gaugeSd);
+  R.baseGroups = R.base.map(function (l) { return l.meas; });
+  R.baseAll = [].concat.apply([], R.baseGroups);
+  R.baseLotMean = R.base.map(function (l) { return mean(l.meas); });
+  R.scrapCount = R.baseAll.filter(function (v) { return v < P.LSL; }).length;
+  R.scrapRate = R.scrapCount / R.baseAll.length;          /* Stage 0 uses this: a plain count */
+  R.cap = capability(R.baseGroups, P.LSL, null);           /* Stage 2 uses this: a fitted model */
+  R.sBetween = Math.sqrt(Math.max(0, R.cap.sOverall * R.cap.sOverall - R.cap.sWithin * R.cap.sWithin));
+  /* measurement variation is inside every reading, so remove it to see the true process */
+  R.sTrue = Math.sqrt(Math.max(0.01, R.cap.sOverall * R.cap.sOverall - R.msa.vGRR));
+  R.capTrue = { cpk: (R.cap.mu - P.LSL) / (3 * R.sTrue), frac: normCdf(-(R.cap.mu - P.LSL) / R.sTrue) };
+  R.driftShare = R.cap.sOverall > 0 ? (R.sBetween * R.sBetween) / (R.cap.sOverall * R.cap.sOverall) : 0;
+
+  /* --- Stage 0: the business case, built from the count and the economics --- */
+  R.tgtFrac = P.target / 100;
+  /* Money is always figured on the fitted rate, for baseline and for after, so the two
+     are on one basis. The counted rate is shown beside it as a reality check: at low
+     defect rates a count of a few hundred parts is far too sparse to price a project. */
+  R.baseFrac = R.cap.overall.frac;
+  R.promised = P.volume * Math.max(0, R.baseFrac - R.tgtFrac) * P.cost;
+  R.charterOk = R.tgtFrac < R.baseFrac;
+
+  /* --- Stage 3: what explains the lot-to-lot drift --- */
+  var r = rng(SEED.decoy);
+  R.X = [
+    { key: 'T', name: 'Sinter peak temperature', unit: '°C', get: function (l) { return l.T; } },
+    { key: 'M', name: 'Powder moisture', unit: '%', get: function (l) { return l.M; } },
+    { key: 'H', name: 'Hold time', unit: 's', get: function (l) { return l.H; } },
+    { key: 'D', name: 'Press density', unit: 'g/cm³', get: function (l) { return l.D; } }
+  ];
+  var Xm = R.base.map(function (l) { return R.X.map(function (x) { return x.get(l); }); });
+  R.reg = ols(Xm, R.baseLotMean);
+  R.vital = [];
+  if (R.reg) R.X.forEach(function (x, i) {
+    var sd = sdev(R.base.map(x.get)), coef = R.reg.b[i + 1], pv = R.reg.p[i + 1];
+    x.coef = coef; x.p = pv; x.sd = sd; x.contrib = Math.pow(coef * sd, 2); x.sig = pv < 0.05;
+    if (x.sig) R.vital.push(x);
+  });
+  var totV = R.X.reduce(function (s, x) { return s + (x.sig ? x.contrib : 0); }, 0);
+  R.X.forEach(function (x) { x.share = totV > 0 && x.sig ? x.contrib / totV : 0; });
+  R.explained = R.reg ? R.reg.r2 : 0;
+  R.analyzeOk = R.vital.length >= 1 && R.explained >= 0.4;
+  /* operator and shift, checked and rejected */
+  function byKey(keyFn) { var g = {}; R.base.forEach(function (l, i) { var k = keyFn(l); (g[k] = g[k] || []).push(R.baseLotMean[i]); }); return Object.keys(g).sort().map(function (k) { return { k: k, v: g[k] }; }); }
+  R.opGroups = byKey(function (l) { return 'Operator ' + l.opr; });
+  R.shGroups = byKey(function (l) { return 'Shift ' + l.sh; });
+  R.opF = anovaP(R.opGroups.map(function (g) { return g.v; }));
+  R.shF = anovaP(R.shGroups.map(function (g) { return g.v; }));
+
+  /* --- Stage 4: the experiment, run on the factors Analyze identified --- */
+  R.doe = makeDOE(SEED.doe, P.gaugeSd, DOE_PER_RUN);
+  R.doeY = R.doe.map(function (d) { return d.y; });
+  var cells = {}; R.doe.forEach(function (d) { var key = d.x.join(','); (cells[key] = cells[key] || []).push(d.y); });
+  var sse = 0; Object.keys(cells).forEach(function (key) { var c = cells[key], m = mean(c); c.forEach(function (v) { sse += (v - m) * (v - m); }); });
+  R.doeDfe = 8; R.doeMse = sse / R.doeDfe;
+  var TERMS = [{ t: [0], n: 'Temperature' }, { t: [1], n: 'Moisture' }, { t: [2], n: 'Hold time' },
+    { t: [0, 1], n: 'Temperature × Moisture' }, { t: [0, 2], n: 'Temperature × Hold' },
+    { t: [1, 2], n: 'Moisture × Hold' }, { t: [0, 1, 2], n: 'Three-way' }];
+  R.doeGm = mean(R.doeY);
+  R.effects = TERMS.map(function (T) {
+    var s = 0; R.doe.forEach(function (d) { var c = 1; T.t.forEach(function (j) { c *= d.x[j]; }); s += c * d.y; });
+    var e = s / (R.doe.length / 2), ss = R.doe.length * e * e / 4, pv = fP(ss / R.doeMse, 1, R.doeDfe);
+    return { name: T.n, idx: T.t, effect: e, coef: e / 2, ss: ss, p: pv, sig: pv < 0.05 };
+  });
+  R.eT = R.effects[0]; R.eM = R.effects[1]; R.eH = R.effects[2]; R.eTM = R.effects[3];
+  R.doeOk = R.eT.sig && R.eM.sig;
+  R.hasInteraction = R.eTM.sig;
+
+  /* --- Stage 5: predict the improved process from the fitted DOE model --- */
+  var xT = (P.impTm - DOE_CODE.Tc) / DOE_CODE.Th, xM = (P.impMm - DOE_CODE.Mc) / DOE_CODE.Mh;
+  R.xT = xT; R.xM = xM;
+  R.predMean = R.doeGm + R.eT.coef * xT + R.eM.coef * xM + (R.hasInteraction ? R.eTM.coef * xT * xM : 0);
+  /* local slopes in real units: with an interaction they depend on where you sit */
+  R.sensT = (R.eT.coef + (R.hasInteraction ? R.eTM.coef * xM : 0)) / DOE_CODE.Th;
+  R.sensM = (R.eM.coef + (R.hasInteraction ? R.eTM.coef * xT : 0)) / DOE_CODE.Mh;
+  R.sensT0 = (R.eT.coef + (R.hasInteraction ? R.eTM.coef * ((BASE_OP.Mm - DOE_CODE.Mc) / DOE_CODE.Mh) : 0)) / DOE_CODE.Th;
+  R.sensM0 = (R.eM.coef + (R.hasInteraction ? R.eTM.coef * ((BASE_OP.Tm - DOE_CODE.Tc) / DOE_CODE.Th) : 0)) / DOE_CODE.Mh;
+  R.predBetween = Math.sqrt(Math.pow(R.sensT * P.impTsd, 2) + Math.pow(R.sensM * P.impMsd, 2) + Math.pow(TRUTH.sdLot, 2));
+  R.predOverall = Math.sqrt(R.predBetween * R.predBetween + R.cap.sWithin * R.cap.sWithin);
+  R.predZ = (R.predMean - P.LSL) / R.predOverall;
+  R.predFrac = normCdf(-R.predZ);
+  R.predPpk = R.predZ / 3;
+  R.meetsTarget = R.predFrac <= R.tgtFrac;
+
+  /* --- pilot at those settings, measured with the same gauge --- */
+  var impOp = { Tm: P.impTm, Tsd: P.impTsd, Mm: P.impMm, Msd: P.impMsd, Hm: 45, Hsd: 6 };
+  R.pilot = makeLots(LOTS_PILOT, impOp, SEED.pilot, P.gaugeSd);
+  R.pilotGroups = R.pilot.map(function (l) { return l.meas; });
+  R.pilotAll = [].concat.apply([], R.pilotGroups);
+  R.pilotLotMean = R.pilot.map(function (l) { return mean(l.meas); });
+  R.pcap = capability(R.pilotGroups, P.LSL, null);
+  R.pilotFrac = R.pcap.overall.frac;
+  R.pilotScrap = R.pilotAll.filter(function (v) { return v < P.LSL; }).length / R.pilotAll.length;
+  /* did the pilot land where the model said it would? */
+  var sePred = R.pcap.sOverall / Math.sqrt(R.pilotAll.length);
+  R.predErr = R.pcap.mu - R.predMean;
+  R.predZerr = sePred > 0 ? R.predErr / sePred : 0;
+  R.predConfirmed = Math.abs(R.predErr) < 2.0;
+  /* is the pilot genuinely better than baseline? */
+  var v1 = Math.pow(sdev(R.baseAll), 2) / R.baseAll.length, v2 = Math.pow(sdev(R.pilotAll), 2) / R.pilotAll.length;
+  var seD = Math.sqrt(v1 + v2);
+  R.confT = (mean(R.pilotAll) - mean(R.baseAll)) / seD;
+  R.confDf = Math.pow(v1 + v2, 2) / (v1 * v1 / (R.baseAll.length - 1) + v2 * v2 / (R.pilotAll.length - 1));
+  R.confP = tP2(R.confT, R.confDf);
+  R.pilotOk = R.confP < 0.05 && R.confT > 0;
+
+  /* --- Stage 6: control limits set from the pilot, never from the old process --- */
+  var mr = []; for (var i = 1; i < R.pilotLotMean.length; i++) mr.push(Math.abs(R.pilotLotMean[i] - R.pilotLotMean[i - 1]));
+  R.mrBar = mean(mr); R.iCl = mean(R.pilotLotMean);
+  R.iSig = R.mrBar / 1.128;
+  R.iUcl = R.iCl + 2.66 * R.mrBar; R.iLcl = R.iCl - 2.66 * R.mrBar;
+  R.mrUcl = 3.267 * R.mrBar;
+  R.mrList = mr;
+  /* the X-bar chart that would have been wrong: it assumes only within-lot noise */
+  R.xbarUcl = R.iCl + A2[5] * mean(R.pilot.map(function (l) { return Math.max.apply(null, l.meas) - Math.min.apply(null, l.meas); }));
+  R.xbarLcl = R.iCl - A2[5] * mean(R.pilot.map(function (l) { return Math.max.apply(null, l.meas) - Math.min.apply(null, l.meas); }));
+  R.xbarFalse = R.pilotLotMean.filter(function (v) { return v > R.xbarUcl || v < R.xbarLcl; }).length;
+  R.iFalse = R.pilotLotMean.filter(function (v) { return v > R.iUcl || v < R.iLcl; }).length;
+  R.marginToSpec = R.iLcl - P.LSL;
+  R.controlOk = R.marginToSpec > 0;
+
+  /* --- Stage 7: what the project actually delivered --- */
+  R.realised = P.volume * Math.max(0, R.baseFrac - R.pilotFrac) * P.cost;
+  R.unitsSaved = P.volume * Math.max(0, R.baseFrac - R.pilotFrac);
+  R.finalPpk = R.pcap.overall.cpk;
+  R.targetMet = R.pilotFrac <= R.tgtFrac;
+  R.capable = R.finalPpk >= 1.33;
+  return R;
+}
+function anovaP(groups) {
+  var all = [].concat.apply([], groups), N = all.length, k = groups.length, gm = mean(all), ssb = 0, ssw = 0;
+  groups.forEach(function (g) { var m = mean(g); ssb += g.length * Math.pow(m - gm, 2); g.forEach(function (v) { ssw += Math.pow(v - m, 2); }); });
+  var dfb = k - 1, dfw = N - k, F = (ssb / dfb) / (ssw / dfw);
+  return { F: F, p: fP(F, dfb, dfw), means: groups.map(mean) };
+}
+
+/* ---------- small SVG chart kit, themed through CSS variables ---------- */
+var TXT = 'style="fill:var(--ink-2);font-family:var(--font-mono);font-size:9.5px"';
+function frame(W, H, x0, x1, y0, y1, o) {
+  o = o || {};
+  var ml = o.ml === undefined ? 44 : o.ml, mr = o.mr === undefined ? 14 : o.mr,
+      mt = o.mt === undefined ? 14 : o.mt, mb = o.mb === undefined ? (o.xl ? 34 : 24) : o.mb;
+  if (x1 === x0) x1 = x0 + 1; if (y1 === y0) y1 = y0 + 1;
+  var xs = function (v) { return ml + (v - x0) / (x1 - x0) * (W - ml - mr); };
+  var ys = function (v) { return H - mb - (v - y0) / (y1 - y0) * (H - mt - mb); };
+  var s = '<rect x="0" y="0" width="' + W + '" height="' + H + '" style="fill:var(--surface-2)"/>';
+  s += '<line x1="' + ml + '" y1="' + (H - mb) + '" x2="' + (W - mr) + '" y2="' + (H - mb) + '" style="stroke:var(--line)"/>';
+  s += '<line x1="' + ml + '" y1="' + mt + '" x2="' + ml + '" y2="' + (H - mb) + '" style="stroke:var(--line)"/>';
+  var nt = o.yticks === undefined ? 4 : o.yticks;
+  for (var i = 0; nt > 0 && i <= nt; i++) {
+    var v = y0 + (y1 - y0) * i / nt, yy = ys(v);
+    s += '<line x1="' + ml + '" y1="' + yy + '" x2="' + (W - mr) + '" y2="' + yy + '" style="stroke:var(--line);opacity:.4"/>';
+    s += '<text x="' + (ml - 5) + '" y="' + (yy + 3) + '" text-anchor="end" ' + TXT + '>' + fmt(v, o.yd === undefined ? 0 : o.yd) + '</text>';
+  }
+  if (o.xl) s += '<text x="' + ((ml + W - mr) / 2) + '" y="' + (H - 6) + '" text-anchor="middle" ' + TXT + '>' + esc(o.xl) + '</text>';
+  if (o.yl) s += '<text transform="translate(11,' + ((mt + H - mb) / 2) + ') rotate(-90)" text-anchor="middle" ' + TXT + '>' + esc(o.yl) + '</text>';
+  return { s: s, xs: xs, ys: ys, ml: ml, mr: mr, mt: mt, mb: mb, W: W, H: H };
+}
+function fig(W, H, body, cap) {
+  return '<figure><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(cap) + '">' + body + '</svg><figcaption>' + cap + '</figcaption></figure>';
+}
+function hline(f, v, color, label, dash) {
+  return '<line x1="' + f.ml + '" y1="' + f.ys(v) + '" x2="' + (f.W - f.mr) + '" y2="' + f.ys(v) + '" style="stroke:var(--' + color + ')' + (dash ? ';stroke-dasharray:5 3' : '') + '"/>' +
+    (label ? '<text x="' + (f.W - f.mr) + '" y="' + (f.ys(v) - 3.5) + '" text-anchor="end" ' + TXT + '>' + esc(label) + '</text>' : '');
+}
+/* run / control chart of a series */
+function runChart(vals, lines, cap, opt) {
+  opt = opt || {};
+  var W = 640, H = opt.H || 220, all = vals.concat(lines.map(function (l) { return l.v; }));
+  var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all), pad = (hi - lo) * 0.12 || 1;
+  var f = frame(W, H, 1, Math.max(2, vals.length), lo - pad, hi + pad, { xl: opt.xl || 'Lot (in time order)', yd: 1 });
+  var s = f.s;
+  lines.forEach(function (l) { s += hline(f, l.v, l.c, l.n, l.d !== false); });
+  s += '<polyline points="' + vals.map(function (v, i) { return f.xs(i + 1) + ',' + f.ys(v); }).join(' ') + '" style="fill:none;stroke:var(--accent);stroke-width:1.4"/>';
+  vals.forEach(function (v, i) {
+    var out = lines.some(function (l) { return (l.hi && v > l.v) || (l.lo && v < l.v); });
+    s += '<circle cx="' + f.xs(i + 1) + '" cy="' + f.ys(v) + '" r="' + (out ? 4.4 : 2.6) + '" style="fill:var(--' + (out ? 'bad' : 'accent') + ')"/>';
+  });
+  return fig(W, H, s, cap);
+}
+/* histogram with a fitted normal curve and the spec limit */
+function histo(vals, lsl, mu, sd, cap) {
+  var W = 640, H = 210, n = vals.length, mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+  var lo = Math.min(mn, lsl - 1, mu - 4 * sd), hi = Math.max(mx, mu + 4 * sd), bins = 26, bw = (mx - mn) / bins || 1;
+  var cnt = new Array(bins).fill(0);
+  vals.forEach(function (v) { cnt[Math.max(0, Math.min(bins - 1, Math.floor((v - mn) / bw)))]++; });
+  var mc = Math.max.apply(null, cnt), f = frame(W, H, lo, hi, 0, mc * 1.15, { xl: 'Edge strength index', yticks: 0, ml: 20, mb: 32 }), s = f.s;
+  cnt.forEach(function (c, i) {
+    var xa = mn + i * bw, bad = xa + bw / 2 < lsl;
+    s += '<rect x="' + (f.xs(xa) + 0.7) + '" y="' + f.ys(c) + '" width="' + Math.max(1, f.xs(xa + bw) - f.xs(xa) - 1.4) + '" height="' + (f.ys(0) - f.ys(c)) + '" style="fill:var(--' + (bad ? 'bad' : 'accent') + ');opacity:.62"/>';
+  });
+  var pts = [], peak = n * bw / (sd * Math.sqrt(2 * Math.PI));
+  for (var q = 0; q <= 90; q++) { var xv = lo + (hi - lo) * q / 90; pts.push(f.xs(xv) + ',' + f.ys(peak * Math.exp(-0.5 * Math.pow((xv - mu) / sd, 2)))); }
+  s += '<polyline points="' + pts.join(' ') + '" style="fill:none;stroke:var(--ink);stroke-width:1.5;opacity:.75"/>';
+  s += '<line x1="' + f.xs(lsl) + '" y1="' + f.mt + '" x2="' + f.xs(lsl) + '" y2="' + f.ys(0) + '" style="stroke:var(--bad);stroke-width:1.6"/>';
+  s += '<text x="' + (f.xs(lsl) + 4) + '" y="' + (f.mt + 10) + '" ' + TXT + '>LSL ' + fmt(lsl, 0) + '</text>';
+  return fig(W, H, s, cap);
+}
+/* horizontal bars */
+function bars(items, cap, fmtv) {
+  var W = 640, rowH = 26, H = items.length * rowH + 16;
+  var mx = Math.max.apply(null, items.map(function (i) { return Math.abs(i.v); }).concat([1e-9]));
+  var s = '<rect x="0" y="0" width="' + W + '" height="' + H + '" style="fill:var(--surface-2)"/>', lw = 186;
+  items.forEach(function (it, i) {
+    var y = 8 + i * rowH, w = Math.abs(it.v) / mx * (W - lw - 74);
+    s += '<text x="' + (lw - 8) + '" y="' + (y + 14) + '" text-anchor="end" style="fill:var(--ink);font-family:var(--font-body);font-size:11px">' + esc(it.l) + '</text>';
+    s += '<rect x="' + lw + '" y="' + (y + 4) + '" width="' + Math.max(1, w) + '" height="13" rx="2" style="fill:var(--' + (it.c || 'accent') + ')' + (it.dim ? ';opacity:.32' : '') + '"/>';
+    s += '<text x="' + (lw + w + 6) + '" y="' + (y + 14.5) + '" ' + TXT + '>' + (fmtv ? fmtv(it.v) : fmt(it.v, 1)) + '</text>';
+  });
+  return fig(W, H, s, cap);
+}
+/* two-factor interaction plot: the picture that justifies the whole DOE */
+function interactionPlot(R, cap) {
+  var W = 640, H = 240;
+  var lo = DOE_CODE.Mc - DOE_CODE.Mh, hi = DOE_CODE.Mc + DOE_CODE.Mh;
+  function at(xT, xM) { return R.doeGm + R.eT.coef * xT + R.eM.coef * xM + R.eTM.coef * xT * xM; }
+  var ys = [at(-1, -1), at(-1, 1), at(1, -1), at(1, 1)];
+  var y0 = Math.min.apply(null, ys) - 3, y1 = Math.max.apply(null, ys) + 5;
+  var f = frame(W, H, lo, hi, y0, y1, { xl: 'Powder moisture (%)', yl: 'Edge strength index', yd: 0 }), s = f.s;
+  [[-1, 'ink-2', 'Temperature LOW (' + DOE_LV.T[0] + '°C)'], [1, 'accent', 'Temperature HIGH (' + DOE_LV.T[1] + '°C)']].forEach(function (L) {
+    var a = at(L[0], -1), b = at(L[0], 1);
+    s += '<line x1="' + f.xs(lo) + '" y1="' + f.ys(a) + '" x2="' + f.xs(hi) + '" y2="' + f.ys(b) + '" style="stroke:var(--' + L[1] + ');stroke-width:2.4"/>';
+    s += '<circle cx="' + f.xs(lo) + '" cy="' + f.ys(a) + '" r="4" style="fill:var(--' + L[1] + ')"/><circle cx="' + f.xs(hi) + '" cy="' + f.ys(b) + '" r="4" style="fill:var(--' + L[1] + ')"/>';
+    s += '<text x="' + (f.xs(lo) + 8) + '" y="' + (f.ys(a) - 8) + '" style="fill:var(--' + L[1] + ');font-family:var(--font-body);font-size:11px;font-weight:500">' + L[2] + '</text>';
+    s += '<text x="' + (f.xs(hi) - 4) + '" y="' + (f.ys(b) - 9) + '" text-anchor="end" ' + TXT + '>drop ' + fmt(a - b, 1) + '</text>';
+  });
+  return fig(W, H, s, cap);
+}
+/* baseline against pilot, both as fitted curves, with the scrap tail shaded */
+function beforeAfter(R, cap) {
+  var W = 640, H = 230, P = R.P;
+  var lo = Math.min(P.LSL - 6, R.cap.mu - 3.6 * R.cap.sOverall), hi = Math.max(R.pcap.mu + 3.6 * R.pcap.sOverall, R.cap.mu + 3.4 * R.cap.sOverall);
+  var pk = Math.max(1 / R.cap.sOverall, 1 / R.pcap.sOverall);
+  var f = frame(W, H, lo, hi, 0, pk * 1.12, { xl: 'Edge strength index', yticks: 0, ml: 20, mb: 32 }), s = f.s;
+  [[R.cap.mu, R.cap.sOverall, 'ink-2', 'Before'], [R.pcap.mu, R.pcap.sOverall, 'accent', 'After']].forEach(function (C) {
+    var pts = [], tail = [];
+    for (var q = 0; q <= 140; q++) {
+      var xv = lo + (hi - lo) * q / 140, yv = Math.exp(-0.5 * Math.pow((xv - C[0]) / C[1], 2)) / C[1];
+      pts.push(f.xs(xv) + ',' + f.ys(yv));
+      if (xv <= P.LSL) tail.push(f.xs(xv) + ',' + f.ys(yv));
+    }
+    if (tail.length > 1) s += '<polygon points="' + f.xs(lo) + ',' + f.ys(0) + ' ' + tail.join(' ') + ' ' + f.xs(P.LSL) + ',' + f.ys(0) + '" style="fill:var(--bad);opacity:.3"/>';
+    s += '<polyline points="' + pts.join(' ') + '" style="fill:none;stroke:var(--' + C[2] + ');stroke-width:2.2"/>';
+    s += '<text x="' + f.xs(C[0]) + '" y="' + (f.ys(1 / C[1]) - 6) + '" text-anchor="middle" style="fill:var(--' + C[2] + ');font-family:var(--font-body);font-size:11px;font-weight:600">' + C[3] + '</text>';
+  });
+  s += '<line x1="' + f.xs(P.LSL) + '" y1="' + f.mt + '" x2="' + f.xs(P.LSL) + '" y2="' + f.ys(0) + '" style="stroke:var(--bad);stroke-width:1.6"/>';
+  s += '<text x="' + (f.xs(P.LSL) + 4) + '" y="' + (f.mt + 10) + '" ' + TXT + '>LSL</text>';
+  return fig(W, H, s, cap);
+}
+/* scatter of lot mean against one X, with the fitted line */
+function scatterX(R, x, cap) {
+  var W = 640, H = 215, xv = R.base.map(x.get), yv = R.baseLotMean;
+  var x0 = Math.min.apply(null, xv), x1 = Math.max.apply(null, xv), y0 = Math.min.apply(null, yv), y1 = Math.max.apply(null, yv);
+  var px = (x1 - x0) * .06, py = (y1 - y0) * .1;
+  var f = frame(W, H, x0 - px, x1 + px, y0 - py, y1 + py, { xl: x.name + ' (' + x.unit + ')', yl: 'Lot mean', yd: 0, xd: 2 }), s = f.s;
+  var mx = mean(xv), my = mean(yv), sxy = 0, sxx = 0;
+  for (var i = 0; i < xv.length; i++) { sxy += (xv[i] - mx) * (yv[i] - my); sxx += Math.pow(xv[i] - mx, 2); }
+  var b = sxx ? sxy / sxx : 0, a = my - b * mx;
+  s += '<line x1="' + f.xs(x0 - px) + '" y1="' + f.ys(a + b * (x0 - px)) + '" x2="' + f.xs(x1 + px) + '" y2="' + f.ys(a + b * (x1 + px)) + '" style="stroke:var(--ink-2);stroke-dasharray:4 3"/>';
+  xv.forEach(function (v, i) { s += '<circle cx="' + f.xs(v) + '" cy="' + f.ys(yv[i]) + '" r="3.1" style="fill:var(--accent);opacity:.72"/>'; });
+  return fig(W, H, s, cap);
+}
+
+/* ---------- small builders ---------- */
+function kpi(l, v, c) { return '<div class="kpi' + (c ? ' ' + c : '') + '"><b>' + v + '</b><span>' + l + '</span></div>'; }
+function kpis() { return '<div class="kpis">' + [].slice.call(arguments).join('') + '</div>'; }
+function flowIn(items) { return '<div class="flow"><b>Carried in from earlier stages</b><ul>' + items.map(function (i) { return '<li>' + i + '</li>'; }).join('') + '</ul></div>'; }
+function flowOut(items) { return '<div class="flow out"><b>Handed to the stages that follow</b><ul>' + items.map(function (i) { return '<li>' + i + '</li>'; }).join('') + '</ul></div>'; }
+function verdict(c, html) { return '<div class="verdict ' + c + '">' + html + '</div>'; }
+function table(head, rows, cls) {
+  return '<div class="tbl"><table><thead><tr>' + head.map(function (h) { return '<th' + (h.n ? ' class="num"' : '') + '>' + esc(h.t !== undefined ? h.t : h) + '</th>'; }).join('') +
+    '</tr></thead><tbody>' + rows.map(function (r) { return '<tr' + (r.hi ? ' class="hi"' : '') + '>' + (r.c || r).map(function (c, i) { return '<td' + (head[i] && head[i].n ? ' class="num"' : '') + '>' + c + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' + (cls || '');
+}
+function cls3(ok, warn) { return ok ? 'good' : (warn ? 'warn' : 'bad'); }
+
+/* ===================== THE STAGES ===================== */
+var STAGES = [
+{ code: 'D', phase: 'Define', title: 'Charter and business case',
+  kit: [['tools/project-charter-bb','Project charter'], ['tools/savings-worksheet','Hard and soft savings'], ['calculators/financial-analysis','NPV, IRR and payback']],
+  lead: 'Fix what the project is about, what will be measured, and what the gap is worth. Nothing here is guessed: the baseline comes from counting the scrap records, and the savings follow from that count, the volume and the cost of a scrapped insert.',
+  gate: function (R) { return R.charterOk ? { l: 'pass', t: 'Charter is signable: the target is below the baseline and the business case is positive.' } : { l: 'stop', t: 'The target is not below the baseline. There is no gap to close, so there is no project.' }; },
+  render: function (R) {
+    var P = R.P;
+    return flowIn(['Nothing. This is where the project starts.']) +
+      '<div class="cardrow">' +
+      '<div class="card"><h4>The process</h4><p>Sintered carbide inserts, three lines. One sinter batch is a lot; five inserts from each lot go to the strength bench.</p></div>' +
+      '<div class="card"><h4>The Y</h4><p>Edge strength index (ESI). Below the lower spec limit the edge chips during finishing and the insert is scrapped.</p></div>' +
+      '<div class="card"><h4>The gap</h4><p>Scrap is running near five per cent against a customer-driven limit of ' + fmt(P.target, 1) + ' per cent.</p></div>' +
+      '</div>' +
+      kpis(
+        kpi('Lower spec limit', fmt(P.LSL, 0)),
+        kpi('Scrapped in the baseline records', R.scrapCount + ' of ' + R.baseAll.length),
+        kpi('Baseline scrap rate (counted)', pct(R.scrapRate), 'bad'),
+        kpi('Charter target', pct(R.tgtFrac, 1)),
+        kpi('Annual volume', big(P.volume)),
+        kpi('Cost of one scrapped insert', fmt(P.cost, 2))) +
+      '<h3>What the gap is worth</h3>' +
+      table(['Line', { t: 'Value', n: 1 }, 'Where it comes from'], [
+        ['Baseline scrap rate', pct(R.baseFrac), 'Stage 2 fits a distribution to the same readings. Used for money so that before and after sit on one basis.'],
+        ['Target scrap rate', pct(R.tgtFrac, 1), 'Set by the customer requirement'],
+        ['Gap to close', pct(R.baseFrac - R.tgtFrac), 'Baseline less target'],
+        ['Inserts saved each year', big(P.volume * Math.max(0, R.baseFrac - R.tgtFrac)), 'Gap × annual volume'],
+        { hi: 1, c: ['<b>Savings promised</b>', '<b>' + big(R.promised) + '</b>', 'Inserts saved × cost each. This is the number finance will hold the project to.'] }
+      ]) +
+      verdict('warn', '<b>A caution on the two baseline numbers.</b> Counting gives ' + pct(R.scrapRate) + ' and the fitted model in Stage 2 gives ' + pct(R.baseFrac) + '. They differ because ' + R.baseAll.length + ' readings is a small sample for a rate of a few per cent: a handful of parts either way moves the count. Money is figured on the fitted rate throughout, so the before and after comparison is like for like.') +
+      flowOut(['The lower spec limit of <code>' + fmt(P.LSL, 0) + '</code> goes to every stage that judges a reading good or bad.',
+        'The baseline rate of <code>' + pct(R.baseFrac) + '</code> becomes the yardstick at closure.',
+        'The promised <code>' + big(R.promised) + '</code> is what Stage 7 has to answer for.']);
+  } },
+
+{ code: 'M', phase: 'Measure', title: 'Validate the measurement system',
+  kit: [['calculators/gage-rr-anova','Gage R&R (ANOVA)'], ['calculators/attribute-agreement','Attribute agreement']],
+  lead: 'Before any reading is trusted, find out how much of its variation is the gauge rather than the process. Every number in every later stage comes through this bench, so if it is not capable, nothing after it means anything.',
+  gate: function (R) {
+    if (!R.msa.ok) return { l: 'stop', t: 'Gauge R&R is ' + fmt(R.msa.pctSV, 1) + '% of study variation with ' + R.msa.ndc + ' distinct categories. Over 30%, or fewer than 5 categories, means the bench cannot tell good parts from bad. Fix the measurement system before collecting another number.' };
+    if (R.msa.grade === 'hold') return { l: 'hold', t: 'Gauge R&R is ' + fmt(R.msa.pctSV, 1) + '% — inside the 10 to 30% band that is acceptable depending on what the measurement is used for. Usable here, with the limitation on record.' };
+    return { l: 'pass', t: 'Gauge R&R is under 10% of study variation. The bench is fit for the decisions it will be used for.' };
+  },
+  render: function (R) {
+    var m = R.msa, M = m.ms;
+    var comp = [['Total gauge R&R', m.vGRR], ['  Repeatability (the bench itself)', m.vRep], ['  Reproducibility (between operators)', m.vRepro], ['Part to part', m.vPart]];
+    return flowIn(['The Y being measured, and the lower spec limit of <code>' + fmt(R.P.LSL, 0) + '</code>, from Stage 1.']) +
+      '<p class="note">Ten inserts spanning the production range, three operators, three repeat readings each: 90 readings in all. Crossed design, analysed by ANOVA so that the operator-by-part interaction can be separated.</p>' +
+      kpis(
+        kpi('Study variation from the gauge', fmt(m.pctSV, 1) + '%', cls3(m.pctSV <= 10, m.ok)),
+        kpi('Variance contribution', fmt(m.pctContrib, 1) + '%'),
+        kpi('Distinct categories', m.ndc, m.ndc >= 5 ? 'good' : 'bad'),
+        kpi('Gauge standard deviation', fmt(m.sdGRR, 3))) +
+      '<h3>ANOVA</h3>' +
+      table(['Source', { t: 'df', n: 1 }, { t: 'Sum of squares', n: 1 }, { t: 'Mean square', n: 1 }, { t: 'p', n: 1 }], [
+        ['Part', M.dfp, fmt(M.ssp, 1), fmt(M.msp, 2), '< 0.0001'],
+        ['Operator', M.dfo, fmt(M.sso, 2), fmt(M.mso, 3), ''],
+        ['Part × operator', M.dfi, fmt(M.ssi, 2), fmt(M.msi, 3), pstr(m.pI)],
+        ['Repeatability', M.dfe, fmt(M.sse, 2), fmt(M.mse, 3), '']
+      ]) +
+      (m.pooled ? '<p class="note">The part-by-operator interaction is not significant (p = ' + pstr(m.pI) + '), so it has been pooled into repeatability. Operators are not measuring particular parts differently.</p>'
+                : '<p class="note">The part-by-operator interaction is significant (p = ' + pstr(m.pI) + '): some operators read some parts differently. Look at method and training before trusting the bench.</p>') +
+      '<h3>Where the variation sits</h3>' +
+      bars(comp.map(function (c) { return { l: c[0].trim(), v: Math.sqrt(c[1] / m.vTot) * 100, c: c[0].indexOf('Part to part') === 0 ? 'good' : 'warn', dim: c[0].charAt(0) === ' ' }; }),
+        'Each component as a percentage of total study variation', function (v) { return fmt(v, 1) + '%'; }) +
+      verdict(m.ok ? (m.grade === 'pass' ? 'good' : 'warn') : 'bad',
+        (m.vRep > m.vRepro ? '<b>Repeatability dominates:</b> the bench itself, its fixturing and the environment are the place to look. ' : '<b>Reproducibility dominates:</b> operators differ from one another, so method and training are the place to look. ') +
+        'A measurement standard deviation of ' + fmt(m.sdGRR, 3) + ' sits inside every reading this project will take. Stage 3 removes it to see what the process alone is doing.') +
+      flowOut(['Measurement standard deviation <code>' + fmt(m.sdGRR, 3) + '</code> goes to Stage 3, which subtracts it to separate the gauge from the process.',
+        'The pass decision unlocks every stage after this one. A failed gauge invalidates the baseline, the regression, the experiment and the control chart alike.']);
+  } },
+
+{ code: 'M', phase: 'Measure', title: 'Baseline capability',
+  kit: [['calculators/capability-study','Capability study'], ['calculators/normality-test','Normality test'], ['calculators/rolled-throughput-yield','Rolled throughput yield']],
+  lead: 'With a trusted bench, establish how the process actually performs. The point is not one number but two: what the process could do if it held still, and what it really does over weeks. The gap between them is the project.',
+  gate: function (R) {
+    if (!R.msa.ok) return { l: 'stop', t: 'Running on readings from a gauge that failed Stage 2. These figures describe the measurement system as much as the process.' };
+    return R.driftShare > 0.2 ? { l: 'hold', t: 'The process is not in statistical control: ' + pct(R.driftShare, 0) + ' of total variance is drift between lots. Capability indices assume stability, so treat these as a description of the past, not a prediction. The drift itself is the lead into Stage 4.' }
+      : { l: 'pass', t: 'Variation is mostly within lots, so the capability estimate is a fair description of the process.' };
+  },
+  render: function (R) {
+    var c = R.cap, P = R.P;
+    return flowIn(['Lower spec limit <code>' + fmt(P.LSL, 0) + '</code> from Stage 1.',
+      'Measurement standard deviation <code>' + fmt(R.msa.sdGRR, 3) + '</code> from Stage 2, removed below to get the process on its own.']) +
+      '<p class="note">' + LOTS_BASE + ' consecutive lots, five inserts measured from each: ' + R.baseAll.length + ' readings.</p>' +
+      kpis(
+        kpi('Mean', fmt(c.mu)),
+        kpi('σ within lots', fmt(c.sWithin, 3)),
+        kpi('σ between lots', fmt(R.sBetween, 3), 'warn'),
+        kpi('σ overall', fmt(c.sOverall, 3)),
+        kpi('Cpk (short term)', fmt(c.within.cpk), cls3(c.within.cpk >= 1.33, c.within.cpk >= 1)),
+        kpi('Ppk (long term)', fmt(c.overall.cpk), cls3(c.overall.cpk >= 1.33, c.overall.cpk >= 1)),
+        kpi('Scrap rate (fitted)', pct(c.overall.frac), 'bad')) +
+      runChart(R.baseLotMean, [{ v: mean(R.baseLotMean), c: 'ink-2', n: 'mean', d: false }, { v: P.LSL, c: 'bad', n: 'LSL' }],
+        'Lot means over ' + LOTS_BASE + ' lots. The level wanders: this is the drift that Cpk cannot see.') +
+      histo(R.baseAll, P.LSL, c.mu, c.sOverall, 'All ' + R.baseAll.length + ' readings against the spec limit. The shaded bars are scrap.') +
+      '<h3>The two capability numbers, and why they differ</h3>' +
+      table(['Index', { t: 'Value', n: 1 }, { t: 'σ used', n: 1 }, 'What it says'], [
+        ['Cpk', fmt(c.within.cpk), fmt(c.sWithin, 3), 'What the process could do if every lot behaved like the lot before it'],
+        ['Ppk', fmt(c.overall.cpk), fmt(c.sOverall, 3), 'What the process really delivered across all ' + LOTS_BASE + ' lots'],
+        { hi: 1, c: ['<b>Gap</b>', '<b>' + fmt(c.within.cpk - c.overall.cpk) + '</b>', '<b>' + fmt(R.sBetween, 3) + '</b>', '<b>Drift between lots. ' + pct(R.driftShare, 0) + ' of all variance. This is what Stage 4 has to explain.</b>'] }
+      ]) +
+      '<h3>Taking the gauge back out</h3>' +
+      table(['Quantity', { t: 'Value', n: 1 }, 'Note'], [
+        ['σ overall, as measured', fmt(c.sOverall, 3), 'Process and gauge together'],
+        ['σ of the gauge', fmt(R.msa.sdGRR, 3), 'From Stage 2'],
+        ['σ of the process alone', fmt(R.sTrue, 3), '√(measured² − gauge²)'],
+        ['True scrap rate', pct(R.capTrue.frac), 'What the process would produce measured perfectly, against ' + pct(c.overall.frac) + ' as measured']
+      ]) +
+      verdict(R.driftShare > 0.2 ? 'warn' : 'good',
+        '<b>Cpk ' + fmt(c.within.cpk) + ' against Ppk ' + fmt(c.overall.cpk) + '.</b> Within a lot the process is tighter than the long-run figures suggest. Something changes between lots, and that something is worth ' + fmt(c.within.cpk - c.overall.cpk) + ' of capability. Centring would help too: the mean sits ' + fmt((c.mu - P.LSL) / c.sOverall) + ' standard deviations above the limit, where 4 or more is wanted.') +
+      flowOut(['σ within lots <code>' + fmt(c.sWithin, 3) + '</code> goes to Stage 6: the experiment changes the lot-to-lot behaviour, not the spread inside a lot, so this carries forward unchanged into the prediction.',
+        'σ between lots <code>' + fmt(R.sBetween, 3) + '</code> goes to Stage 4 as the thing that has to be explained.',
+        'Fitted scrap rate <code>' + pct(c.overall.frac) + '</code> becomes the baseline for the benefit at closure.']);
+  } },
+
+{ code: 'A', phase: 'Analyze', title: 'Find what drives the drift',
+  kit: [['calculators/multiple-regression','Multiple regression'], ['calculators/anova-one-way','One-way ANOVA'], ['calculators/multi-vari','Multi-vari study'], ['tools/cause-effect-matrix','C&amp;E matrix']],
+  lead: 'Stage 3 handed over a quantity of drift between lots. This stage asks which recorded process variables account for it, and tests the usual suspects rather than assuming them.',
+  gate: function (R) {
+    if (!R.msa.ok) return { l: 'stop', t: 'The readings behind this regression come from a gauge that failed its study. Relationships found here may be measurement artefacts.' };
+    if (!R.analyzeOk) return { l: 'stop', t: 'No variable explains enough of the drift. Going to an experiment now would mean experimenting on factors with no evidence behind them.' };
+    return { l: 'pass', t: R.vital.map(function (x) { return x.name.toLowerCase(); }).join(' and ') + ' are significant and together account for most of the lot-to-lot variation. They become the factors in Stage 5.' };
+  },
+  render: function (R) {
+    var rows = R.X.map(function (x, i) {
+      return { c: [x.name + ' <span class="muted">(' + x.unit + ')</span>', fmt(x.coef, x.key === 'M' ? 1 : 4), fmt(R.reg.se[i + 1], x.key === 'M' ? 1 : 4), fmt(R.reg.t[i + 1], 2),
+        '<span class="' + (x.sig ? 'sig' : 'insig') + '">' + pstr(x.p) + '</span>', fmt(R.reg.vif[i], 2), x.sig ? pct(x.share, 0) : '—'], hi: x.sig };
+    });
+    return flowIn(['σ between lots <code>' + fmt(R.sBetween, 3) + '</code> from Stage 3 — the variation this stage has to account for.',
+      'The ' + LOTS_BASE + ' lot records, each carrying its own process settings.']) +
+      '<p class="note">Least squares fit of lot mean strength on everything the line records. Hold time and press density are in the model as genuine candidates, not as padding: both are plausible, and both have to be tested rather than dismissed.</p>' +
+      kpis(kpi('R² ', pct(R.reg.r2, 1), R.reg.r2 >= 0.6 ? 'good' : 'warn'),
+        kpi('R² adjusted', pct(R.reg.adj, 1)),
+        kpi('Residual σ', fmt(R.reg.s, 3)),
+        kpi('Model p', pstr(R.reg.pF), 'good')) +
+      table(['Variable', { t: 'Coefficient', n: 1 }, { t: 'Std error', n: 1 }, { t: 't', n: 1 }, { t: 'p', n: 1 }, { t: 'VIF', n: 1 }, { t: 'Share of drift', n: 1 }], rows) +
+      '<p class="note">All variance inflation factors are near 1, so the variables are not standing in for one another and each coefficient can be read on its own.</p>' +
+      bars(R.X.map(function (x) { return { l: x.name, v: x.sig ? x.share * 100 : 0, c: x.sig ? 'accent' : 'ink-2', dim: !x.sig }; }),
+        'Share of the explained lot-to-lot variation', function (v) { return v > 0 ? fmt(v, 0) + '%' : 'not significant'; }) +
+      (R.vital.length ? scatterX(R, R.vital[0], R.vital[0].name + ' against lot mean strength. The slope is the coefficient in the table.') : '') +
+      '<h3>The suspects that did not survive</h3>' +
+      table(['Checked', { t: 'Test', n: 0 }, { t: 'p', n: 1 }, 'Conclusion'], [
+        ['Operator', 'One-way ANOVA across three operators', pstr(R.opF.p), R.opF.p < 0.05 ? 'Differs' : 'No evidence of a difference'],
+        ['Shift', 'One-way ANOVA across three shifts', pstr(R.shF.p), R.shF.p < 0.05 ? 'Differs' : 'No evidence of a difference'],
+        ['Hold time', 'Regression coefficient', pstr(R.X[2].p), R.X[2].sig ? 'Significant' : 'No evidence of an effect'],
+        ['Press density', 'Regression coefficient', pstr(R.X[3].p), R.X[3].sig ? 'Significant' : 'No evidence of an effect']
+      ]) +
+      verdict('good', '<b>Vital few: ' + R.vital.map(function (x) { return x.name.toLowerCase(); }).join(' and ') + '.</b> ' +
+        'Together they account for ' + pct(R.reg.r2, 0) + ' of the variation between lot means. Operator and shift were the shop-floor favourites and neither survives a test, which is the usual result and the reason for running one. ' +
+        '<b>What this stage cannot do:</b> these are observational data. The two variables moved on their own, over a narrow everyday range, and nothing here shows what happens if they are deliberately moved, or whether they interact. That needs an experiment.') +
+      flowOut([R.vital.map(function (x) { return '<code>' + x.name + '</code>'; }).join(' and ') + ' become the factors in Stage 5. Hold time goes in too, as a check that the experiment can correctly find a factor that does nothing.',
+        'Coefficients here (' + R.vital.map(function (x) { return fmt(x.coef, x.key === 'M' ? 0 : 3); }).join(', ') + ') give Stage 5 something to compare its own estimates against.']);
+  } },
+
+{ code: 'I', phase: 'Improve', title: 'Experiment on the vital few',
+  kit: [['tools/doe-planner','DOE run planner'], ['calculators/doe-factorial-analysis','Factorial DOE analysis']],
+  lead: 'A designed experiment moves the factors on purpose, over a range wider than daily operation, in a randomised order. That is what lets it do the thing the regression could not: estimate interactions, and support a claim about cause.',
+  gate: function (R) {
+    if (!R.analyzeOk) return { l: 'stop', t: 'The factors in this experiment were not established by Stage 4.' };
+    return R.doeOk ? { l: 'pass', t: 'Both main effects are significant' + (R.hasInteraction ? ', and so is the interaction between them' : '') + '. The model can be used to choose settings.' }
+      : { l: 'stop', t: 'The experiment did not resolve the effects. Check for an error in the runs, or replicate.' };
+  },
+  render: function (R) {
+    var eff = R.effects.slice().sort(function (a, b) { return Math.abs(b.effect) - Math.abs(a.effect); });
+    var seC = Math.sqrt(R.doeMse / R.doe.length);
+    return flowIn(['Factors <code>' + R.vital.map(function (x) { return x.name; }).join('</code> and <code>') + '</code> from Stage 4, plus hold time as a control.',
+      'Coefficients from the regression, to check the experiment against.']) +
+      '<p class="note">Two-level full factorial in three factors, two replicates: 16 runs, randomised, ' + DOE_PER_RUN + ' inserts measured per run. Levels are set wider than normal operation so the effects clear the noise: temperature ' + DOE_LV.T[0] + ' and ' + DOE_LV.T[1] + ' °C, moisture ' + DOE_LV.M[0] + ' and ' + DOE_LV.M[1] + ' %, hold ' + DOE_LV.H[0] + ' and ' + DOE_LV.H[1] + ' s.</p>' +
+      kpis(kpi('Runs', R.doe.length), kpi('Pure error σ', fmt(Math.sqrt(R.doeMse), 2)), kpi('Error df', R.doeDfe), kpi('Significant terms', R.effects.filter(function (e) { return e.sig; }).length, 'good')) +
+      table(['Term', { t: 'Effect', n: 1 }, { t: 'Coefficient', n: 1 }, { t: 'p', n: 1 }, 'Verdict'],
+        eff.map(function (e) { return { c: [e.name, fmt(e.effect, 2), fmt(e.coef, 2), '<span class="' + (e.sig ? 'sig' : 'insig') + '">' + pstr(e.p) + '</span>', e.sig ? 'Real' : 'Noise'], hi: e.sig }; })) +
+      bars(eff.map(function (e) { return { l: e.name, v: Math.abs(e.effect), c: e.sig ? 'accent' : 'ink-2', dim: !e.sig }; }),
+        'Size of each effect. Anything beyond about ' + fmt(2 * seC * 2.3, 1) + ' is bigger than the noise in this experiment.', function (v) { return fmt(v, 2); }) +
+      (R.hasInteraction ? interactionPlot(R, 'The interaction. Each line is strength against moisture at one temperature. They are not parallel, and that is the whole finding.') : '') +
+      (R.hasInteraction ? verdict('good', '<b>The finding the regression could not have made.</b> The two lines are not parallel. At the low temperature, raising moisture across the tested range costs ' +
+        fmt(R.doeGm + R.eT.coef * -1 + R.eM.coef * -1 + R.eTM.coef * 1 - (R.doeGm + R.eT.coef * -1 + R.eM.coef * 1 + R.eTM.coef * -1), 1) + ' points of strength. At the high temperature it costs only ' +
+        fmt(R.doeGm + R.eT.coef + R.eM.coef * -1 - R.eTM.coef - (R.doeGm + R.eT.coef + R.eM.coef + R.eTM.coef), 1) + '. ' +
+        'Running hotter does not merely raise strength: it makes the process <i>less sensitive to moisture</i>. Since moisture is one of the two things driving the drift, that is a way of removing variation rather than just shifting the average — and no amount of watching the process from the outside would have revealed it.') : '') +
+      '<h3>How the experiment compares with the regression</h3>' +
+      table(['Factor', { t: 'Regression on past data', n: 1 }, { t: 'Experiment', n: 1 }, 'Reading'], [
+        ['Temperature, per °C', fmt(R.X[0].coef, 3), fmt(R.eT.coef / DOE_CODE.Th, 3), 'Close. Two independent routes to the same slope.'],
+        ['Moisture, per 1%', fmt(R.X[1].coef, 0), fmt(R.eM.coef / DOE_CODE.Mh, 0), 'Same direction and size.'],
+        ['Hold time', fmt(R.X[2].coef, 3) + (R.X[2].sig ? '' : ' (n.s.)'), fmt(R.eH.coef / DOE_CODE.Hh, 3) + (R.eH.sig ? '' : ' (n.s.)'), 'Both say it does nothing. The experiment can find a null.'],
+        ['Temperature × moisture', 'cannot be estimated', fmt(R.eTM.coef, 2) + (R.eTM.sig ? '' : ' (n.s.)'), 'Only the experiment can see this.']
+      ]) +
+      '<h3>Fitted model, in coded units</h3>' +
+      '<p class="n" style="background:var(--surface-2);padding:11px 13px;border-radius:var(--r);font-size:.86rem;overflow-x:auto">ESI = ' + fmt(R.doeGm) + ' + ' + fmt(R.eT.coef) + '·T ' + (R.eM.coef < 0 ? '− ' + fmt(-R.eM.coef) : '+ ' + fmt(R.eM.coef)) + '·M' + (R.hasInteraction ? ' + ' + fmt(R.eTM.coef) + '·T·M' : '') + '</p>' +
+      '<p class="note">T and M run from −1 at the low level to +1 at the high level. Hold time is left out: it did nothing.</p>' +
+      flowOut(['The fitted model goes to Stage 6 to predict what a chosen operating point will deliver.',
+        'The interaction term <code>' + fmt(R.eTM.coef, 2) + '</code> means sensitivity to moisture depends on temperature, so Stage 6 must work out the slope <i>at the new operating point</i> rather than reusing the old one.']);
+  } },
+
+{ code: 'I', phase: 'Improve', title: 'Predict, then confirm with a pilot',
+  kit: [['calculators/t-tests','t-tests'], ['calculators/power-sample-size','Power and sample size']],
+  lead: 'This is where the chain earns its keep. The experiment gives a model, the baseline gives the spread inside a lot, and the proposed control limits give the spread between lots. Those three combine into a predicted scrap rate — before a single pilot part is made. Then the pilot runs, and the prediction is either right or it is not.',
+  gate: function (R) {
+    if (!R.doeOk) return { l: 'stop', t: 'There is no validated model to predict from.' };
+    if (!R.pilotOk) return { l: 'stop', t: 'The pilot is not significantly better than the baseline.' };
+    if (!R.predConfirmed) return { l: 'hold', t: 'The pilot came in ' + fmt(Math.abs(R.predErr)) + ' away from the prediction. The improvement is real but the model is not describing it well; understand why before setting control limits on it.' };
+    return { l: 'pass', t: 'The pilot landed within ' + fmt(Math.abs(R.predErr)) + ' of the predicted mean and is significantly better than baseline. The model can be trusted to set the control strategy.' };
+  },
+  render: function (R) {
+    var P = R.P;
+    return flowIn(['The fitted model from Stage 5.',
+      'σ within lots <code>' + fmt(R.cap.sWithin, 3) + '</code> from Stage 3 — unchanged, because the experiment addressed lot-to-lot behaviour.',
+      'Baseline scrap <code>' + pct(R.baseFrac) + '</code> from Stage 3, to test the pilot against.']) +
+      '<h3>The operating point proposed</h3>' +
+      table(['Factor', { t: 'Was', n: 1 }, { t: 'Now', n: 1 }, 'How it is held'], [
+        ['Sinter peak temperature', fmt(BASE_OP.Tm, 0) + ' ± ' + fmt(BASE_OP.Tsd, 1), fmt(P.impTm, 0) + ' ± ' + fmt(P.impTsd, 1), 'Calibrated thermocouples, tighter alarm band'],
+        ['Powder moisture', fmt(BASE_OP.Mm, 3) + ' ± ' + fmt(BASE_OP.Msd, 3), fmt(P.impMm, 3) + ' ± ' + fmt(P.impMsd, 3), 'Drying step and per-lot screening']
+      ]) +
+      '<h3>What the model predicts, before the pilot runs</h3>' +
+      table(['Step', { t: 'Value', n: 1 }, 'Where it comes from'], [
+        ['Predicted mean', fmt(R.predMean), 'Fitted model read at the new settings'],
+        ['Slope against temperature here', fmt(R.sensT, 3), 'Was ' + fmt(R.sensT0, 3) + ' at the old operating point'],
+        ['Slope against moisture here', fmt(R.sensM, 1), 'Was ' + fmt(R.sensM0, 1) + ' — the interaction cuts it by ' + pct(1 - Math.abs(R.sensM / R.sensM0), 0)],
+        ['Predicted σ between lots', fmt(R.predBetween, 3), 'Slopes × how tightly each factor is now held, added in quadrature'],
+        ['σ within lots', fmt(R.cap.sWithin, 3), 'Carried unchanged from Stage 3'],
+        ['Predicted σ overall', fmt(R.predOverall, 3), '√(between² + within²)'],
+        { hi: 1, c: ['<b>Predicted scrap rate</b>', '<b>' + pct(R.predFrac, 3) + '</b>', '<b>Normal tail below the spec limit at the predicted mean and spread</b>'] }
+      ]) +
+      verdict(R.meetsTarget ? 'good' : 'warn', R.meetsTarget
+        ? 'The prediction of ' + pct(R.predFrac, 3) + ' clears the charter target of ' + pct(R.tgtFrac, 1) + '. On that basis the pilot is worth running.'
+        : 'The prediction of ' + pct(R.predFrac, 3) + ' does not reach the charter target of ' + pct(R.tgtFrac, 1) + '. Hold the factors tighter, or move the setpoint, before committing to a pilot.') +
+      '<h3>The pilot: ' + LOTS_PILOT + ' lots at those settings</h3>' +
+      kpis(
+        kpi('Predicted mean', fmt(R.predMean)),
+        kpi('Pilot mean', fmt(R.pcap.mu), Math.abs(R.predErr) < 1 ? 'good' : 'warn'),
+        kpi('Miss', (R.predErr >= 0 ? '+' : '') + fmt(R.predErr), Math.abs(R.predErr) < 1 ? 'good' : 'warn'),
+        kpi('Predicted σ overall', fmt(R.predOverall, 3)),
+        kpi('Pilot σ overall', fmt(R.pcap.sOverall, 3)),
+        kpi('Pilot scrap (fitted)', pct(R.pilotFrac, 3), 'good')) +
+      beforeAfter(R, 'Baseline and pilot as fitted distributions. The shaded tail below the spec limit is the scrap rate in each case.') +
+      '<h3>Is the pilot genuinely better, or is this luck?</h3>' +
+      table(['Quantity', { t: 'Value', n: 1 }], [
+        ['Baseline mean', fmt(mean(R.baseAll))],
+        ['Pilot mean', fmt(mean(R.pilotAll))],
+        ['Difference', fmt(mean(R.pilotAll) - mean(R.baseAll))],
+        ['Welch t', fmt(R.confT, 2)],
+        ['p', pstr(R.confP)]
+      ]) +
+      verdict(R.predConfirmed && R.pilotOk ? 'good' : 'warn',
+        '<b>The prediction missed by ' + fmt(Math.abs(R.predErr)) + ' on a mean of ' + fmt(R.predMean) + '.</b> ' +
+        (R.predConfirmed ? 'That is the real test of everything upstream. A gauge that was not capable, a regression that found the wrong variables, or an experiment read wrongly would all show up here as a prediction that missed. It did not miss, so the chain holds.'
+          : 'A miss this size means something upstream is not right. Find out what before relying on the model.')) +
+      flowOut(['Confirmed mean <code>' + fmt(R.pcap.mu) + '</code> and σ <code>' + fmt(R.pcap.sOverall, 3) + '</code> go to Stage 7 to set control limits. Limits come from the improved process, never from the old one.',
+        'Confirmed scrap rate <code>' + pct(R.pilotFrac, 3) + '</code> goes to Stage 8 as the benefit actually delivered.']);
+  } },
+
+{ code: 'C', phase: 'Control', title: 'Hold the gain',
+  kit: [['tools/control-chart-chooser-bb','Which control chart?'], ['calculators/control-charts-variable','Variable control charts'], ['tools/control-plan-builder','Control plan builder']],
+  lead: 'Control the few variables the project proved matter, not everything that can be measured. The chart type is not a matter of taste either: what Stage 3 found about where the variation sits decides which chart will work and which will cry wolf.',
+  gate: function (R) {
+    if (!R.pilotOk) return { l: 'stop', t: 'There is no confirmed improvement to hold.' };
+    return R.controlOk ? { l: 'pass', t: 'The lower control limit sits ' + fmt(R.marginToSpec) + ' above the spec limit, so the chart signals before parts go out of specification.' }
+      : { l: 'hold', t: 'The lower control limit is below the spec limit. The chart would let scrap through before it signalled. Reduce variation further, or inspect as well as chart.' };
+  },
+  render: function (R) {
+    var P = R.P, xbarSig = R.cap.sWithin / Math.sqrt(5), lotSd = sdev(R.pilotLotMean);
+    return flowIn(['Pilot lots from Stage 6, which set the centre line and the limits.',
+      'The vital few from Stage 4 — these, and not the long list, are what gets charted.',
+      'The finding from Stage 3 that variation sits between lots as well as within them.']) +
+      '<h3>Choosing the chart</h3>' +
+      '<p class="note">An X̄ and R chart assumes the only source of variation is within the subgroup, and builds its limits from the range inside each lot. Stage 3 showed that is false here: lots differ from one another as well. Using it anyway produces limits that are too narrow, and the chart alarms on ordinary behaviour.</p>' +
+      table(['Chart', { t: 'Assumed σ of a lot mean', n: 1 }, { t: 'Actual σ of a lot mean', n: 1 }, { t: 'Signals in the pilot', n: 1 }, 'Verdict'], [
+        ['X̄ and R on five inserts', fmt(xbarSig, 2), fmt(lotSd, 2), R.xbarFalse, R.xbarFalse > R.iFalse ? 'Too narrow: ' + R.xbarFalse + ' alarms on a process that is behaving' : 'Workable here'],
+        { hi: 1, c: ['<b>Individuals and moving range on lot means</b>', '<b>' + fmt(R.iSig, 2) + '</b>', '<b>' + fmt(lotSd, 2) + '</b>', '<b>' + R.iFalse + '</b>', '<b>Treats the lot as the unit of production, which is what it is</b>'] }
+      ]) +
+      runChart(R.pilotLotMean, [{ v: R.iCl, c: 'ink-2', n: 'CL ' + fmt(R.iCl, 1), d: false }, { v: R.iUcl, c: 'bad', n: 'UCL ' + fmt(R.iUcl, 1), hi: 1 }, { v: R.iLcl, c: 'bad', n: 'LCL ' + fmt(R.iLcl, 1), lo: 1 }, { v: P.LSL, c: 'warn', n: 'LSL ' + fmt(P.LSL, 0) }],
+        'Individuals chart on lot mean strength, limits from the pilot. The gap between the lower control limit and the spec limit is the warning the operator gets.') +
+      kpis(kpi('Centre line', fmt(R.iCl)), kpi('Upper control limit', fmt(R.iUcl)), kpi('Lower control limit', fmt(R.iLcl)),
+        kpi('Spec limit', fmt(P.LSL, 0)), kpi('Margin before scrap', fmt(R.marginToSpec), R.controlOk ? 'good' : 'bad')) +
+      '<h3>Control plan</h3>' +
+      '<p class="note">Built from what the project established, not from a template. Each row traces to the stage that justified it.</p>' +
+      table(['What', { t: 'Target', n: 0 }, 'Chart', 'If it signals', 'Why it is here'],
+        R.vital.map(function (x) {
+          var isT = x.key === 'T';
+          return [x.name, isT ? fmt(P.impTm, 0) + ' ± ' + fmt(3 * P.impTsd, 0) + ' °C' : fmt(P.impMm, 3) + ' ± ' + fmt(3 * P.impMsd, 3) + ' %',
+            'I-MR, every lot', isT ? 'Hold the batch, check thermocouple calibration, quarantine for bench test' : 'Reject or re-dry the powder lot, re-test before release',
+            'Stage 4 found it significant (p ' + pstr(x.p) + '); Stage 5 quantified it'];
+        }).concat([
+          ['Edge strength index', '≥ ' + fmt(P.LSL, 0) + ', centre ' + fmt(R.iCl, 0), 'I-MR on lot means', 'Stop, contain the lot, run the reaction plan on both inputs', 'The project Y'],
+          ['Gauge calibration', '≤ ' + fmt(R.msa.sdGRR * 1.3, 2) + ' σ', 'Monthly check against a master', 'Re-calibrate, re-run the R&R study', 'Stage 2: everything else depends on this bench']
+        ])) +
+      verdict(R.controlOk ? 'good' : 'warn',
+        R.controlOk ? '<b>The chart warns in time.</b> A lot mean at the lower control limit is still ' + fmt(R.marginToSpec) + ' above the spec limit, so a signal means act now, not explain later. Hold time and press density are deliberately absent: the project tested both and neither mattered, and charting them would spend attention for nothing.'
+          : '<b>The chart does not warn in time.</b> With the lower control limit below the spec limit, parts can go out of specification before the chart says anything.') +
+      flowOut(['Control limits and the plan hand over to the process owner.',
+        'The confirmed scrap rate goes to Stage 8 for the benefit, and should be tracked monthly against it for a year.']);
+  } },
+
+{ code: 'C', phase: 'Control', title: 'Closure and honest accounting',
+  kit: [['tools/benefits-tracker','Benefits tracker'], ['calculators/financial-analysis','Project financials']],
+  lead: 'What the project promised, what it delivered, and what it did not fix. The last number matters as much as the first: a project that hits its target and leaves the process short of capable has earned a successor, not a celebration.',
+  gate: function (R) { return R.targetMet ? { l: 'pass', t: 'Target met and the benefit is confirmed on the same basis as the baseline.' } : { l: 'hold', t: 'The target was not reached. The gain is real but the charter commitment is not met.' }; },
+  render: function (R) {
+    var P = R.P;
+    var audit = [
+      ['Gauge σ', fmt(R.msa.sdGRR, 3), 'Stage 2', 'Let Stage 3 separate process from measurement; set the credibility of everything after'],
+      ['σ within lots', fmt(R.cap.sWithin, 3), 'Stage 3', 'Carried unchanged into the Stage 6 prediction'],
+      ['σ between lots', fmt(R.sBetween, 3), 'Stage 3', 'Became the target of the Stage 4 investigation'],
+      ['Vital few', R.vital.map(function (x) { return x.key === 'T' ? 'temperature' : 'moisture'; }).join(', '), 'Stage 4', 'Became the factors in the Stage 5 experiment and the rows of the control plan'],
+      ['Interaction coefficient', fmt(R.eTM.coef, 2), 'Stage 5', 'Changed the moisture slope used in the Stage 6 prediction'],
+      ['Predicted mean', fmt(R.predMean), 'Stage 6', 'Tested against the pilot: missed by ' + fmt(Math.abs(R.predErr))],
+      ['Confirmed σ', fmt(R.pcap.sOverall, 3), 'Stage 6', 'Set the control limits in Stage 7'],
+      ['Confirmed scrap', pct(R.pilotFrac, 3), 'Stage 6', 'The benefit claimed here']
+    ];
+    return flowIn(['Baseline scrap <code>' + pct(R.baseFrac) + '</code> and the promise of <code>' + big(R.promised) + '</code> from Stage 1.',
+      'Confirmed scrap <code>' + pct(R.pilotFrac, 3) + '</code> from Stage 6.']) +
+      kpis(
+        kpi('Baseline scrap', pct(R.baseFrac), 'bad'),
+        kpi('Charter target', pct(R.tgtFrac, 1)),
+        kpi('Achieved', pct(R.pilotFrac, 3), 'good'),
+        kpi('Promised savings', big(R.promised)),
+        kpi('Realised savings', big(R.realised), 'good'),
+        kpi('Final Ppk', fmt(R.finalPpk), cls3(R.capable, R.finalPpk >= 1))) +
+      beforeAfter(R, 'Before and after. The project moved the mean up and cut the spread; the shaded tail is what the customer used to pay for.') +
+      '<h3>The benefit, on one basis</h3>' +
+      table(['Line', { t: 'Value', n: 1 }, 'Note'], [
+        ['Baseline scrap rate', pct(R.baseFrac), 'Fitted, Stage 3'],
+        ['Confirmed scrap rate', pct(R.pilotFrac, 3), 'Fitted, Stage 6, same method'],
+        ['Reduction', pct(R.baseFrac - R.pilotFrac), ''],
+        ['Inserts no longer scrapped each year', big(R.unitsSaved), 'Reduction × ' + big(P.volume)],
+        { hi: 1, c: ['<b>Realised annual savings</b>', '<b>' + big(R.realised) + '</b>', '<b>Against ' + big(R.promised) + ' promised at the charter</b>'] }
+      ]) +
+      verdict(R.targetMet ? 'good' : 'warn',
+        '<b>' + (R.targetMet ? 'Target met, and beaten.' : 'Target not met.') + '</b> ' +
+        (R.hasInteraction && R.targetMet ? 'The charter promised ' + big(R.promised) + ' on the assumption that scrap would fall to ' + pct(R.tgtFrac, 1) + '. It fell further, to ' + pct(R.pilotFrac, 3) + ', because of something nobody knew at the charter: running hotter makes the process less sensitive to moisture. That finding came from the experiment, which is why the experiment was worth running. A project cannot promise what it has not yet discovered.' : '')) +
+      verdict(R.capable ? 'good' : 'warn',
+        '<b>And what is still wrong.</b> Final Ppk is ' + fmt(R.finalPpk) + '. The usual minimum for an ongoing process is 1.33, so this process is better but still not capable: it is ' + fmt((R.pcap.mu - P.LSL) / R.pcap.sOverall) + ' standard deviations from the limit when 4 is wanted. ' +
+        'Most of what is left is spread inside a lot (σ ' + fmt(R.cap.sWithin, 2) + '), which this project never touched — every stage from Stage 4 onward worked on differences between lots. That is the next project, and it is a different one: insert-to-insert variation within a single sinter batch.') +
+      '<h3>Audit trail</h3>' +
+      '<p class="note">Every number that crossed a stage boundary, and what it was used for. This is what makes the result checkable by someone who was not in the room.</p>' +
+      table(['Quantity', { t: 'Value', n: 1 }, 'Produced by', 'Used for'], audit) +
+      '<h3>If the gauge had been worse</h3>' +
+      '<p class="note">Open the what-if panel and push the gauge error up. The baseline scrap rate <i>rises</i>, because measurement noise widens the apparent spread, and the apparent savings rise with it. A project built on a bad gauge can book a benefit that was never there. That is the reason Stage 2 comes before everything else, and the reason it has the power to stop the project.</p>' +
+      flowOut(['Handover to the process owner, with the control plan from Stage 7.',
+        'Track the benefit monthly against ' + big(R.realised) + ' for twelve months, on the counted scrap rate, with finance confirming.',
+        'Charter the follow-on project on within-lot variation.']);
+  } }
+];
+
+var KIT_BASE = '../';
+var KIT_EXT = false;
+/* ===================== UI ===================== */
+var RAIL = ['Charter', 'Measurement system', 'Baseline capability', 'Find the drivers', 'Experiment', 'Predict and confirm', 'Control', 'Closure'];
+var cur = 0, R = null;
+
+var KNOBS = [
+  { g: 'Measurement', k: 'gaugeSd', l: 'Gauge repeatability σ', min: 0.4, max: 4.5, step: 0.1, d: 3,
+    h: 'The spread of repeat readings on one insert. Raise it and watch Stage 2 fail, the baseline look worse than it is, and the apparent savings grow.' },
+  { g: 'Specification', k: 'LSL', l: 'Lower spec limit', min: 92, max: 108, step: 0.5, d: 1,
+    h: 'What counts as a good insert. Everything that judges good from bad moves with it.' },
+  { g: 'Control after improvement', k: 'impTm', l: 'Temperature setpoint held', min: 1424, max: 1442, step: 1, d: 0,
+    h: 'The experiment found 1440 °C best. Production cannot always hold the optimum; see what the shortfall costs.' },
+  { g: 'Control after improvement', k: 'impTsd', l: 'Temperature σ between lots', min: 1.5, max: 11, step: 0.5, d: 1,
+    h: 'How tightly the setpoint is actually held, lot to lot. Was ' + BASE_OP.Tsd.toFixed(1) + ' before the project.' },
+  { g: 'Control after improvement', k: 'impMm', l: 'Moisture target', min: 0.24, max: 0.33, step: 0.005, d: 3,
+    h: 'Drier is stronger, but drying costs money and time.' },
+  { g: 'Control after improvement', k: 'impMsd', l: 'Moisture σ between lots', min: 0.004, max: 0.034, step: 0.002, d: 3,
+    h: 'Was ' + BASE_OP.Msd.toFixed(3) + ' before the project. The interaction means this matters less at high temperature.' },
+  { g: 'Economics', k: 'target', l: 'Charter target scrap rate (%)', min: 0.1, max: 4.5, step: 0.1, d: 1, h: 'What the project committed to in Stage 1.' },
+  { g: 'Economics', k: 'volume', l: 'Annual volume (inserts)', min: 200000, max: 1800000, step: 20000, d: 0, h: 'Across the three lines.' },
+  { g: 'Economics', k: 'cost', l: 'Cost of one scrapped insert', min: 4, max: 40, step: 0.5, d: 2, h: 'Material, conversion and handling.' }
+];
+
+function save() { try { localStorage.setItem('dmaic-wb', JSON.stringify({ cur: cur, P: P })); } catch (e) { } }
+function load() { try { var s = JSON.parse(localStorage.getItem('dmaic-wb')); if (s && s.P) { for (var k in DEFAULTS) if (typeof s.P[k] === 'number') P[k] = s.P[k]; cur = Math.min(STAGES.length - 1, Math.max(0, s.cur | 0)); } } catch (e) { } }
+
+function gateOf(i) { try { return STAGES[i].gate(R); } catch (e) { return { l: 'hold', t: '' }; } }
+
+function renderStrip() {
+  var items = [
+    { l: 'Baseline scrap', v: pct(R.baseFrac), c: 'b' },
+    { l: 'Gauge R&R', v: fmt(R.msa.pctSV, 1) + '%', c: R.msa.ok ? (R.msa.grade === 'pass' ? 'g' : 'w') : 'b' },
+    { l: 'Vital few', v: R.vital.length ? R.vital.map(function (x) { return x.key === 'T' ? 'Temp' : x.key === 'M' ? 'Moist' : x.key; }).join(' + ') : 'none', c: R.vital.length ? 'g' : 'b' },
+    { l: 'Predicted', v: pct(R.predFrac, 3), c: '' },
+    { l: 'Confirmed', v: pct(R.pilotFrac, 3), c: R.targetMet ? 'g' : 'w' },
+    { l: 'Final Ppk', v: fmt(R.finalPpk), c: R.capable ? 'g' : 'w' },
+    { l: 'Savings', v: big(R.realised), c: 'g' }
+  ];
+  $('#strip').innerHTML = items.map(function (i) { return '<div class="sv ' + i.c + '"><b>' + i.v + '</b><span>' + i.l + '</span></div>'; }).join('');
+}
+function renderRail() {
+  var head = '<div class="rail-head">' +
+    '<b>The eight stages</b>' +
+    '<p>Each one computes from what the stage before it produced, so a change made early reaches the savings.</p>' +
+    '<div class="legend">' +
+      '<span><i class="m-ok">&#10003;</i> evidence holds</span>' +
+      '<span><i class="m-warn">!</i> proceed with care</span>' +
+      '<span><i class="m-stop">&#215;</i> stopped at the gate</span>' +
+    '</div></div>';
+  var list = STAGES.map(function (s, i) {
+    var g = gateOf(i), c = g.l === 'pass' ? 'done' : g.l === 'hold' ? 'warn' : 'blocked';
+    return '<button class="rl ' + c + '" data-i="' + i + '" aria-current="' + (i === cur) + '" type="button">' +
+      '<span class="dot">' + (g.l === 'pass' ? '&#10003;' : g.l === 'hold' ? '!' : '&#215;') + '</span>' +
+      '<span><b style="font-weight:inherit">' + (i + 1) + '. ' + esc(RAIL[i]) + '</b><small>' + s.phase + '</small></span></button>';
+  }).join('');
+  $('#rail').innerHTML = head + '<div class="rail-list">' + list + '</div>';
+}
+function renderStage() {
+  var S = STAGES[cur], g = gateOf(cur);
+  var upstream = [];
+  for (var i = 0; i < cur; i++) { var gi = gateOf(i); if (gi.l === 'stop') upstream.push(i + 1); }
+  var h = '<span class="eyebrow">Stage ' + (cur + 1) + ' of ' + STAGES.length + ' &nbsp;·&nbsp; ' + S.phase + '</span>' +
+    '<h2>' + esc(S.title) + '</h2><p class="lead">' + S.lead + '</p>';
+  var ulist = upstream.length === 1 ? 'Stage ' + upstream[0] : 'Stages ' + upstream.slice(0, -1).join(', ') + ' and ' + upstream[upstream.length - 1];
+  if (upstream.length) h += '<div class="gate stop"><span class="lbl">Upstream failure</span><span>' + ulist + ' did not pass. The numbers below still compute, but they rest on evidence that failed its own check — which is exactly what a workbook with no gates would hide from you.</span></div>';
+  h += S.render(R);
+  if (S.kit && S.kit.length) {
+    h += '<div class="kitbox"><b>Run this stage on your own numbers</b>' +
+      '<p>These open the matching page in the Black Belt toolkit, each with worked example values and a reset button.</p>' +
+      '<div class="kitlinks">' + S.kit.map(function (k) {
+        return '<a href="' + KIT_BASE + k[0] + '.html"' + (KIT_EXT ? ' target="_blank" rel="noopener"' : '') + '>' + k[1] + ' <span aria-hidden="true">&rarr;</span></a>';
+      }).join('') + '</div></div>';
+  }
+  h += '<div class="gate ' + (g.l === 'pass' ? 'pass' : g.l === 'hold' ? 'hold' : 'stop') + '"><span class="lbl">' + (g.l === 'pass' ? 'Gate: pass' : g.l === 'hold' ? 'Gate: proceed with care' : 'Gate: stop') + '</span><span>' + g.t + '</span></div>';
+  h += '<div class="navrow">' +
+    '<button class="btn" id="prev" type="button"' + (cur === 0 ? ' disabled' : '') + '>&larr; ' + (cur > 0 ? esc(RAIL[cur - 1]) : 'Back') + '</button>' +
+    '<button class="btn primary" id="next" type="button"' + (cur === STAGES.length - 1 ? ' disabled' : '') + '>' + (cur < STAGES.length - 1 ? esc(RAIL[cur + 1]) : 'Done') + ' &rarr;</button>' +
+    '<span class="note" style="flex:1;min-width:180px">Change anything in the what-if panel and every stage after it moves.</span></div>';
+  $('#stage').innerHTML = h;
+  $('#prev').onclick = function () { go(cur - 1); };
+  $('#next').onclick = function () { go(cur + 1); };
+}
+function go(i) {
+  if (i < 0 || i >= STAGES.length) return;
+  cur = i; save(); renderRail(); renderStage();
+  $('#stage').focus({ preventScroll: true });
+  var y = $('#stage').getBoundingClientRect().top + window.scrollY - (stickyBottom() + 16);
+  window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+}
+function renderDrawer() {
+  var groups = [], seen = {};
+  KNOBS.forEach(function (k) { if (!seen[k.g]) { seen[k.g] = []; groups.push(k.g); } seen[k.g].push(k); });
+  $('#drawerBody').innerHTML = groups.map(function (g) {
+    return '<div style="display:flex;flex-direction:column;gap:12px"><b class="eyebrow">' + esc(g) + '</b>' + seen[g].map(function (k) {
+      return '<div class="fld"><label for="k_' + k.k + '">' + esc(k.l) + '<span class="v" id="v_' + k.k + '">' + (k.k === 'volume' ? big(P[k.k]) : fmt(P[k.k], k.d)) + '</span></label>' +
+        '<input id="k_' + k.k + '" type="range" min="' + k.min + '" max="' + k.max + '" step="' + k.step + '" value="' + P[k.k] + '">' +
+        '<span class="hint">' + esc(k.h) + '</span></div>';
+    }).join('') + '</div>';
+  }).join('') + '<button class="btn" id="resetBtn" type="button">Reset every input to the project as run</button>';
+  KNOBS.forEach(function (k) {
+    $('#k_' + k.k).addEventListener('input', function () {
+      P[k.k] = parseFloat(this.value);
+      $('#v_' + k.k).textContent = k.k === 'volume' ? big(P[k.k]) : fmt(P[k.k], k.d);
+      refresh();
+    });
+  });
+  $('#resetBtn').onclick = function () { for (var k in DEFAULTS) P[k] = DEFAULTS[k]; renderDrawer(); refresh(); };
+}
+function refresh() { R = compute(P); renderStrip(); renderRail(); renderStage(); save(); }
+
+/* theme */
+(function () {
+  var t = null; try { t = localStorage.getItem('dmaic-theme'); } catch (e) { }
+  if (t) document.documentElement.setAttribute('data-theme', t);
+  document.addEventListener('click', function (e) {
+    if (e.target && e.target.id === 'themeBtn') {
+      var d = document.documentElement.getAttribute('data-theme');
+      if (!d) d = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      var n = d === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', n);
+      try { localStorage.setItem('dmaic-theme', n); } catch (e2) { }
+    }
+  });
+})();
+/* boot */
+load();
+R = compute(P);
+renderStrip(); renderRail(); renderStage(); renderDrawer();
+$('#rail').addEventListener('click', function (e) { var b = e.target.closest('.rl'); if (b) go(+b.getAttribute('data-i')); });
+/* One measurement drives everything that has to clear the sticky block: the
+   what-if panel, the stage rail, and how far a stage change scrolls. */
+function stickyBottom() { var st = document.querySelector('.hero'); return st ? Math.round(st.getBoundingClientRect().bottom) : 118; }
+function syncSticky() {
+  var top = document.querySelector('.top');
+  if (top) document.documentElement.style.setProperty('--headerH', Math.round(top.getBoundingClientRect().height) + 'px');
+  document.documentElement.style.setProperty('--stickyH', stickyBottom() + 'px');
+}
+function placeDrawer() {
+  var d = $('#drawer'); if (!d) return;
+  var top = stickyBottom();
+  d.style.top = top + 'px';
+  d.style.maxHeight = 'calc(100vh - ' + (top + 12) + 'px)';
+}
+$('#whatIfBtn').onclick = function () {
+  var d = $('#drawer'), open = d.getAttribute('data-open') === 'true';
+  if (!open) placeDrawer();
+  d.setAttribute('data-open', open ? 'false' : 'true');
+};
+syncSticky();
+window.addEventListener('resize', function () { syncSticky(); if ($('#drawer').getAttribute('data-open') === 'true') placeDrawer(); });
+$('#drawerClose').onclick = function () { $('#drawer').setAttribute('data-open', 'false'); };
+
+</script>
+</body>
+</html>
