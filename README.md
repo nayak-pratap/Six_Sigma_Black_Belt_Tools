@@ -2,6 +2,12 @@
 
 Interactive calculators and tools for Six Sigma Black Belt projects. Each page opens with worked example values from one running case (chipped carbide inserts across three lines), recalculates as you type, and has a **Reset to example values** button. Everything runs in the browser: no build step, no server, no data leaves the page.
 
+## See them working together
+
+The pages here each teach one tool. A project is a chain: the gauge study decides whether the baseline can be trusted, the baseline points at what to investigate, the regression picks the factors for the experiment, and the fitted model predicts a result the pilot then confirms.
+
+**[DMAIC Project Workbook](https://nayak-pratap.github.io/DMAIC_Project_Workbook/)** carries one project through all eight stages on a single dataset, with gates that stop it when the evidence will not support the next step. Each of its stages links back to the pages in this repository, so you can take any single step and run it on your own numbers.
+
 ## Calculators
 
 | Page | What it does |
