@@ -2,14 +2,6 @@
 
 Interactive calculators and tools for Six Sigma Black Belt projects. Each page opens with worked example values from one running case (chipped carbide inserts across three lines), recalculates as you type, and has a **Reset to example values** button. Everything runs in the browser: no build step, no server, no data leaves the page.
 
-## The workbook: all of it on one project
-
-[**DMAIC Project Workbook**](workbook/index.html) carries one carbide-insert project from charter to closure on a single dataset. Every stage computes from the stage before it, so the chain is structural rather than narrative: measurement error found in the gauge study is subtracted from the baseline, the baseline drift sets the target for the regression, the regression picks the experiment factors, and the fitted model predicts a scrap rate that the pilot then confirms (117.50 predicted against 117.55 delivered).
-
-Gates block the next stage when the evidence will not support it. Push the gauge error up in the what-if panel and the measurement study fails, the later stages are flagged as resting on broken evidence, and the apparent savings *rise* — because measurement noise widens the spread and makes the process look worse than it is. That trap is only visible when the stages are connected.
-
-Each stage links back to the pages below, so you can take any single step and run it on your own numbers.
-
 ## Calculators
 
 | Page | What it does |
